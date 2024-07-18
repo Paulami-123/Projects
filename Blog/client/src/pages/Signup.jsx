@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Button, Label, Spinner, TextInput } from "flowbite-react"
+import React from 'react'
+import { Button, Label, TextInput } from "flowbite-react"
 import { Link } from 'react-router-dom'
 
 const Signup = () => {
