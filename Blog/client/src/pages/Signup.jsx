@@ -68,7 +68,7 @@ const Signup = () => {
             </div>
             <div>
               <Label value='Password' />
-              <TextInput type='password' placeholder='Password' id='password' onChange={handleChange} />
+              <TextInput type='password' placeholder='********' id='password' onChange={handleChange} />
             </div>
             <Button gradientDuoTone={'purpleToPink'} type='submit' disabled={loading}>
               {loading ?( 
