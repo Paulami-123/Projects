@@ -33,7 +33,7 @@ const Signin = () => {
       }
       if(res.ok){
         dispatch(signInSuccess(data))
-        navigate('/signin')
+        navigate('/')
       }
     }
     catch(err){
