@@ -5,11 +5,11 @@ import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/
 import { app } from '../firebase';
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
-import { deleteFailure, deleteStart, deleteSuccess, updateFailure, updateStart, updateSuccess } from '../redux/user/userSlice';
+import { deleteFailure, deleteStart, deleteSuccess, signoutSuccess, updateFailure, updateStart, updateSuccess } from '../redux/user/userSlice';
 import { HiOutlineExclamationCircle } from 'react-icons/hi'
 
 export default function DashProfile() {
-  const { currentUser } = useSelector((state) => state.user);
+  const { currentUser, error, loading } = useSelector((state) => state.user);
   const [imageFile, setImageFile] = useState(null);
   const [imageFileURL, setImageFileURL] = useState(null);
   const [imageFileUploadingProgress, setImageFileUploadingProgress] = useState(null);
@@ -126,6 +126,23 @@ export default function DashProfile() {
     }
   }
 
+  const handleSignout = async() => {
+    try {
+      const res = await fetch('/api/user/signout', {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if(!res.ok){
+        console.log(data.message);
+      }
+      else{
+        dispatch(signoutSuccess());
+      }
+    } catch (error) {
+      console.log(error.message)
+    }
+  }
+
   return (
     <div className='max-w-lg mx-auto p-3 w-full'>
       <h1 className='my-7 text-center font-semibold text-3xl'>Profile</h1>
@@ -163,17 +180,22 @@ export default function DashProfile() {
         <TextInput type='text' id='username' placeholder='Username' defaultValue={currentUser.username} onChange={handleChange} />
         <TextInput type='email' id='email' placeholder='Email' defaultValue={currentUser.email} onChange={handleChange} />
         <TextInput type='password' id='password' placeholder='********' onChange={handleChange} />
-        <Button type='submit' gradientDuoTone={'purpleToBlue'} outline>Update</Button>
+        <Button type='submit' gradientDuoTone={'purpleToBlue'} outline disabled={loading || imageFileUploading}>
+          {loading? 'Loading...' : 'Update'}
+        </Button>
       </form>
       <div className='text-red-500 flex justify-between mt-5'>
         <span className='cursor-pointer' onClick={() => {setShowModal(true)}}>Delete Account</span>
-        <span className='cursor-pointer'>Sign Out</span>
+        <span className='cursor-pointer' onClick={handleSignout}>Sign Out</span>
       </div>
       {updateUserSuccess && (
         <Alert color={'success'} className='mt-5'>{updateUserSuccess}</Alert>
       )}
       {updateUserError && (
         <Alert color={'failure'} className='mt-5'>{updateUserError}</Alert>
+      )}
+      {error && (
+        <Alert color={'failure'} className='mt-5'>{error}</Alert>
       )}
       <Modal show={showModal} onClose={() => {setShowModal(false)}} popup size={'md'}>
         <Modal.Header />
