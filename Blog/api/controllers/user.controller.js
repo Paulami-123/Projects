@@ -9,6 +9,7 @@ export const test = (req, res) => {
 }
 
 export const updateUser = async(req, res, next) => {
+    console.log(req.body)
     if(req.user.id !== req.params.userId){
         return next(errorHandler(403, 'You are not allowed to update this user'))
     }
@@ -34,26 +35,26 @@ export const updateUser = async(req, res, next) => {
         if(!req.body.username.match(/^[a-zA-Z0-9]+$/)){
             return next(errorHandler(400, 'Username can contain only letters and digits'))
         }
-        try {
-            const updatedUser = await User.findByIdAndUpdate(
-                req.params.userId,
-                {
-                    $set: {
-                        username: req.body.username,
-                        email: req.body.email,
-                        password: req.body.password,
-                        profilePicture: req.body.profilePicture
-                    },
-                },{
-                    new: true
-                }
-            ).select(['-password'])
-            // const {password: pass, ...rest} = updatedUser._doc;
-            // res.status(200).json(rest)
-            res.status(200).json(updatedUser)
-        } catch (error) {
-            next(error)
-        }
+    }
+    try {
+        const updatedUser = await User.findByIdAndUpdate(
+            req.params.userId,
+            {
+                $set: {
+                    username: req.body.username,
+                    email: req.body.email,
+                    password: req.body.password,
+                    profilePicture: req.body.profilePicture
+                },
+            },{
+                new: true
+            }
+        ).select(['-password'])
+        // const {password: pass, ...rest} = updatedUser._doc;
+        // res.status(200).json(rest)
+        res.status(200).json(updatedUser)
+    } catch (error) {
+        next(error)
     }
 }
 
