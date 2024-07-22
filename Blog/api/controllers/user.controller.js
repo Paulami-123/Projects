@@ -5,35 +5,34 @@ import bcryptjs from "bcryptjs";
 export const test = (req, res) => {
     res.json({
         message: "API is working"
-    })
+    });
 }
 
 export const updateUser = async(req, res, next) => {
-    console.log(req.body)
     if(req.user.id !== req.params.userId){
-        return next(errorHandler(403, 'You are not allowed to update this user'))
+        return next(errorHandler(403, 'You are not allowed to update this user'));
     }
     if(req.body.password){
         if(req.body.password.length<6){
-            return next(errorHandler(400, 'Password must be atleast 6 characters'))
+            return next(errorHandler(400, 'Password must be atleast 6 characters'));
         }
-        req.body.password = bcryptjs.hashSync(req.body.password, 10)
+        req.body.password = bcryptjs.hashSync(req.body.password, 10);
     }
     if(req.body.username){
         if(req.body.username.length<6){
-            return next(errorHandler(400, 'Username must be of atleast 6 characters'))
+            return next(errorHandler(400, 'Username must be of atleast 6 characters'));
         }
         if(req.body.username.length>20){
-            return next(errorHandler(400, 'Username must be of atmost 20 characters'))
+            return next(errorHandler(400, 'Username must be of atmost 20 characters'));
         }
         if(req.body.username.includes(' ')){
-            return next(errorHandler(400, 'Username cannot contain spaces'))
+            return next(errorHandler(400, 'Username cannot contain spaces'));
         }
         if(req.body.username!==req.body.username.toLowerCase()){
-            return next(errorHandler(400, 'Username must be lowercase'))
+            return next(errorHandler(400, 'Username must be lowercase'));
         }
         if(!req.body.username.match(/^[a-zA-Z0-9]+$/)){
-            return next(errorHandler(400, 'Username can contain only letters and digits'))
+            return next(errorHandler(400, 'Username can contain only letters and digits'));
         }
     }
     try {
@@ -49,31 +48,57 @@ export const updateUser = async(req, res, next) => {
             },{
                 new: true
             }
-        ).select(['-password'])
-        // const {password: pass, ...rest} = updatedUser._doc;
-        // res.status(200).json(rest)
-        res.status(200).json(updatedUser)
+        ).select(['-password']);
+        res.status(200).json(updatedUser);
     } catch (error) {
-        next(error)
+        next(error);
     }
 }
 
 export const deleteUser = async(req, res, next) => {
-    if(req.user.id!==req.params.userId){
-        return next(errorHandler(403, 'You are not allowed to delete this user'))
+    if(req.user.id!==req.params.userId && !req.user.isAdmin){
+        return next(errorHandler(403, 'You are not allowed to delete this user'));
     }
     try {
-        await User.findByIdAndDelete(req.params.userId)
-        res.status(200).json("User deleted")
+        await User.findByIdAndDelete(req.params.userId);
+        res.status(200).json("User deleted");
     } catch (error) {
-        next(error)
+        next(error);
     }
 }
 
 export const signout = async(req, res, next) => {
     try{
-        res.clearCookie('access_token').status(200).json("User has been signed out.")
+        res.clearCookie('access_token').status(200).json("User has been signed out.");
     }catch(error){
-        next(error)
+        next(error);
+    }
+}
+
+export const getUsers = async(req, res, next) => {
+    if(!req.user.isAdmin){
+        return next(errorHandler(403, 'You are not allowed to see all users'));
+    }
+    try {
+        const startIndex = parseInt(req.query.startIndex) || 0;
+        const limit = parseInt(req.query.limit) || 9;
+        const sortDirection = req.query.sort==='asc' ? 1 : -1;
+        const usersList = await User.find().sort({createdAt: sortDirection}).skip(startIndex).limit(limit).select(['-password']);
+        const usersCount = await User.countDocuments();
+        const now = new Date();
+        const oneMonthAgo = new Date(now.getFullYear(), now.getMonth()-1, now.getDate());
+        const lastMonthUsers = await User.find({
+            createdAt: {
+                $gte: oneMonthAgo
+            },
+        }).select(['-password']);
+
+        res.status(200).json({
+            users: usersList,
+            totalUsers: usersCount,
+            lastMonthUsers: lastMonthUsers
+        });
+    } catch (error) {
+        next(error);
     }
 }
