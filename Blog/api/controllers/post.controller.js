@@ -8,7 +8,7 @@ export const createPosts = async(req, res, next) => {
     if(!req.body.title || !req.body.content){
         return next(errorHandler(400, 'Please provide all required fields'))
     }
-    const slug = req.body.title.split(' ').join('-').toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
+    const slug = req.body.title.split(' ').join('-').toLowerCase().replace(/[^a-zA-Z0-9-]/g, '');
     const newPost = new Post({
         ...req.body,
         slug,
@@ -80,6 +80,7 @@ export const updatePost = async(req, res, next) => {
         return next(errorHandler(403, 'You are not allowed to update this post'))
     }
     try {
+        const slug = req.body.title ?  req.body.title.split(' ').join('-').toLowerCase().replace(/[^a-zA-Z0-9-]/g, '') : null
         const updatedPost = await Post.findByIdAndUpdate(
             req.params.postId,
             {
@@ -87,7 +88,8 @@ export const updatePost = async(req, res, next) => {
                     title: req.body.title,
                     content: req.body.content,
                     category: req.body.category,
-                    image: req.body.image
+                    image: req.body.image,
+                    slug: slug
                 },
             },
             {

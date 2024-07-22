@@ -11,6 +11,7 @@ import PrivateRoutes from "./components/PrivateRoutes"
 import OnlyAdminPrivateRoutes from "./components/OnlyAdminPrivateRoutes"
 import CreatePost from "./pages/CreatePost"
 import UpdatePost from "./pages/UpdatePost"
+import PostPage from "./pages/PostPage"
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path="/updatepost/:postId" element={<UpdatePost />} />
         </Route>
         <Route path="/projects" element={<Projects />} />
+        <Route path="/post/:postslug" element={<PostPage />} />
       </Routes>
     <FooterCom />
     </BrowserRouter>
