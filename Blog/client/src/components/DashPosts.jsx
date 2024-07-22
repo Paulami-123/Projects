@@ -88,12 +88,12 @@ export default function DashPosts() {
                                         {new Date(post.updatedAt).toLocaleDateString()}
                                     </Table.Cell>
                                     <Table.Cell>
-                                        <Link>
+                                        <Link to={`/post/${post.slug}`} className='w-20 h-10 object-cover bg-gray-500'>
                                             <img src={post.image} alt={post.title} className='w-20 h-10 object-cover bg-gray-500'/>
                                         </Link>
                                     </Table.Cell>
                                     <Table.Cell>
-                                        <Link>
+                                        <Link to={`/post/${post.slug}`} className='font-medium text-gray-900 dark:text-white'>
                                             {post.title}
                                         </Link>
                                     </Table.Cell>
@@ -110,7 +110,7 @@ export default function DashPosts() {
                                         </span>
                                     </Table.Cell>
                                     <Table.Cell>
-                                        <Link className='text-teal-500 hover:underline'>
+                                        <Link className='text-teal-500 hover:underline' to={`/updatepost/${post._id}`}>
                                             <span>Edit</span>
                                         </Link>
                                     </Table.Cell>
