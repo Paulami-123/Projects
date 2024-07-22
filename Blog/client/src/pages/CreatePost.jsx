@@ -34,7 +34,6 @@ export default function CreatePost() {
           setImageUploadProgress(progress.toFixed(0));
         },
         (error) => {
-          console.log(error)
           setImageUploadError('Failed to upload image'),
           setImageUploadProgress(null)
         },
@@ -49,15 +48,13 @@ export default function CreatePost() {
     } catch (error) {
       setImageUploadProgress(null);
       setImageUploadError('Image upload failed');
-      console.log(error)
     }
   }
   
   const handleSubmit = async(e) => {
     e.preventDefault();
-    console.log(formData)
     try {
-      const res = await fetch('/api/post/create', {
+      const res = await fetch('/api/post/createpost', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
