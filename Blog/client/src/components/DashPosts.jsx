@@ -1,7 +1,7 @@
-import { Button, Modal, Table } from 'flowbite-react'
-import React, { useEffect, useState } from 'react'
+import { Button, Modal, Table } from 'flowbite-react';
+import { useEffect, useState } from 'react';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
-import { useSelector } from 'react-redux'
+import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 export default function DashPosts() {
