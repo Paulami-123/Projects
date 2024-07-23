@@ -3,11 +3,13 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom';
 import CallToAction from '../components/CallToAction';
 import CommentSection from '../components/CommentSection';
+import PostCard from '../components/PostCard';
 
 export default function PostPage() {
     const [post, setPost] = useState({});
     const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(true);
+    const [recentPosts, setRecentPosts] = useState([]);
     const { postslug } = useParams();
 
     useEffect(() => {
@@ -31,7 +33,26 @@ export default function PostPage() {
             }
         };
         fetchPost();
-    }, [postslug])
+    }, [postslug]);
+
+    useEffect(() => {
+        try {
+          const fetchRecentPosts = async () => {
+            const res = await fetch(`/api/post/getposts?limit=4`);
+            const data = await res.json();
+            if (res.ok) {
+                data.posts.filter((recentPosts) => recentPosts._id !== post._id);
+                if(data.posts.length===4){
+                    data.posts.splice(3);
+                }
+              setRecentPosts(data.posts);
+            }
+          };
+          fetchRecentPosts();
+        } catch (error) {
+          console.log(error.message);
+        }
+      }, []);
 
     if(loading){
         return(
@@ -60,6 +81,12 @@ export default function PostPage() {
                 <CallToAction />
             </div>
             <CommentSection postId={post._id} />
+            <div className="flex flex-col grid-cols-3 justify-center items-center mb-5">
+                <h1 className='text-xl mt-5'>Recent articles</h1>
+                <div className="flex flex-wrap gap-5 mt-5 justify-center">
+                    {recentPosts && recentPosts.map((displayPost) => <PostCard key={displayPost._id} post={displayPost} />)}
+                </div>
+            </div>
         </main>
     )
 }
