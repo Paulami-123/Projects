@@ -7,6 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { app } from '../firebase';
 import { CircularProgressbar } from 'react-circular-progressbar';
 import { useSelector } from 'react-redux';
+import DashSidebar from '../components/DashSideBar';
 
 export default function UpdatePost() {
     const [file, setFile] = useState(null)
@@ -99,7 +100,9 @@ export default function UpdatePost() {
     }
 
     return (
-        <div className='p-3 max-w-3xl mx-auto min-h-screen'>
+        <div className='min-h-screen flex flex-col md:flex-row gap-6'>
+            <DashSidebar />
+        <div className='p-3 max-w-3xl mx-auto w-full'>
             <h1 className='text-center text-3xl my-7 font-semibold'>Update Post</h1>
             <form className='flex flex-col gap-4' onSubmit={handleSubmit}>
                 <div className="flex flex-col gap-4 sm:flex-row justify-between">
@@ -131,11 +134,16 @@ export default function UpdatePost() {
                     <img src={formData.image} alt='Blog Image' className='w-full h-72 object-cover' />
                 )}
                 <ReactQuill theme='snow' value={formData.content} placeholder='Write something...' className='h-72 mb-12' required />
-                <Button type='submit' gradientDuoTone={'purpleToPink'}>Update Post</Button>
+                {/* <Button type='submit' gradientDuoTone={'purpleToPink'}>Update Post</Button> */}
+                <div className='flex flex-col gap-2 sm:flex-row justify-between'>
+                    <Button type='submit' gradientDuoTone={'greenToBlue'} onClick={() => setFormData({...formData, status: 'draft'})}>Save as Draft</Button>
+                    <Button type='submit' gradientDuoTone={'purpleToPink'} onClick={() => setFormData({...formData, status: 'publish'})}>Publish</Button>
+                </div>
                 {publishError && (
                     <Alert color={'failure'} className='mt-5'>{publishError}</Alert>
                 )}
             </form>
+        </div>
         </div>
     )
 }

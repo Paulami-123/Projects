@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const postSchema = new mongoose.Schema(
     {
     userId: {
-        type: String,
+        type : String,
         required: true
     },
     content: {
@@ -23,11 +23,15 @@ const postSchema = new mongoose.Schema(
         type: String,
         default: 'uncategorised'
     },
+    status: {
+        type: String,
+        default: 'published'
+    },
     slug: {
         type: String,
         required: true,
         unique: true
-    },
+    }
 },
 {
     timestamps: true

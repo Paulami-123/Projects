@@ -5,16 +5,17 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 export default function DashPosts() {
-    const { currentUser } = useSelector((state) => state.user)
-    const [userPosts, setUserPosts] = useState([])
-    const [showMore, setShowMore] = useState(true)
-    const [postIdToDelete, setPostIdToDelete] = useState('')
-    const [showModal, setShowModal] = useState(false)
+    const { currentUser } = useSelector((state) => state.user);
+    const [userPosts, setUserPosts] = useState([]);
+    const [showMore, setShowMore] = useState(true);
+    const [postIdToDelete, setPostIdToDelete] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [editPost, setEditPost] = useState(true);
 
     useEffect(() => {
         const fetchPosts = async() => {
             try {
-                const res = await fetch(`/api/post/getposts?userId=${currentUser._id}`);
+                const res = await fetch(`/api/post/getposts`);
                 const data = await res.json();
                 if(res.ok){
                     setUserPosts(data.posts)
@@ -34,7 +35,7 @@ export default function DashPosts() {
     const handleShowMore = async() => {
         const startIndex = userPosts.length;
         try {
-            const res = await fetch(`/api/post/getposts?userId=${currentUser._id}&startIndex=${startIndex}`);
+            const res = await fetch(`/api/post/getposts?startIndex=${startIndex}`);
             const data = await res.json();
             if(res.ok){
                 setUserPosts((prev) => [...prev, ...data.posts]);
@@ -73,9 +74,11 @@ export default function DashPosts() {
                     <Table hoverable className='shadow-md'>
                         <Table.Head>
                             <Table.HeadCell>Date Updated</Table.HeadCell>
+                            <Table.HeadCell>Author</Table.HeadCell>
                             <Table.HeadCell>Post Image</Table.HeadCell>
                             <Table.HeadCell>Post Title</Table.HeadCell>
                             <Table.HeadCell>Category</Table.HeadCell>
+                            <Table.HeadCell>Status</Table.HeadCell>
                             <Table.HeadCell>Delete</Table.HeadCell>
                             <Table.HeadCell>
                                 <span>Edit</span>
@@ -88,6 +91,9 @@ export default function DashPosts() {
                                         {new Date(post.updatedAt).toLocaleDateString()}
                                     </Table.Cell>
                                     <Table.Cell>
+                                        {post.userId}
+                                    </Table.Cell>
+                                    <Table.Cell>
                                         <Link to={`/post/${post.slug}`} className='w-20 h-10 object-cover bg-gray-500'>
                                             <img src={post.image} alt={post.title} className='w-20 h-10 object-cover bg-gray-500'/>
                                         </Link>
@@ -97,8 +103,11 @@ export default function DashPosts() {
                                             {post.title}
                                         </Link>
                                     </Table.Cell>
-                                    <Table.Cell>
+                                    <Table.Cell className='capitalize'>
                                         {post.category}
+                                    </Table.Cell>
+                                    <Table.Cell className='capitalize'>
+                                        {post.status}
                                     </Table.Cell>
                                     <Table.Cell>
                                         <span className='font-medium text-red-500 hover:underline cursor-pointer' 
@@ -110,7 +119,9 @@ export default function DashPosts() {
                                         </span>
                                     </Table.Cell>
                                     <Table.Cell>
-                                        <Link className='text-teal-500 hover:underline' to={`/updatepost/${post._id}`}>
+                                        <Link 
+                                        className={`text-teal-500 ${currentUser._id===post.userId? 'hover:underline cursor-pointer' : 'cursor-not-allowed'}`}
+                                        to={currentUser._id===post.userId? `/updatepost/${post._id}` : null}>
                                             <span>Edit</span>
                                         </Link>
                                     </Table.Cell>
@@ -125,7 +136,7 @@ export default function DashPosts() {
                     )}
                 </>
                 ) : (
-                <p> You have no posts yet! </p>
+                <p> There are no posts yet! </p>
                 )
             }
             <Modal show={showModal} onClose={() => setShowModal(false)} popup size={'md'}>

@@ -8,7 +8,7 @@ router.post('/add', verifyToken, addComment);
 router.get('/getpostcomments/:postId', getPostComments);
 router.put('/edit/:commentId', verifyToken, editComment);
 router.put('/like/:commentId', verifyToken, likeComment);
-router.delete('/delete/:commentId', verifyToken, deleteComment);
+router.delete('/delete/:commentId/:postId', verifyToken, deleteComment);
 router.get('/getcomments', verifyToken, getComments);
 
 export default router;

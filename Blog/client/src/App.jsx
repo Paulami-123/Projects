@@ -8,15 +8,16 @@ import Projects from "./pages/Projects"
 import Header from "./components/Header"
 import FooterCom from "./components/Footer"
 import PrivateRoutes from "./components/PrivateRoutes"
-import OnlyAdminPrivateRoutes from "./components/OnlyAdminPrivateRoutes"
 import CreatePost from "./pages/CreatePost"
 import UpdatePost from "./pages/UpdatePost"
 import PostPage from "./pages/PostPage"
 import Search from "./pages/Search"
+import ScrollToTop from "./components/ScrollToTop"
 
 function App() {
   return (
     <BrowserRouter>
+    <ScrollToTop />
     <Header />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -26,8 +27,6 @@ function App() {
         <Route path="/search" element={<Search />} />
         <Route element={<PrivateRoutes />} >
           <Route path="/dashboard" element={<Dashboard />} />
-        </Route>
-        <Route element={<OnlyAdminPrivateRoutes />}>
           <Route path="/createpost" element={<CreatePost />} />
           <Route path="/updatepost/:postId" element={<UpdatePost />} />
         </Route>

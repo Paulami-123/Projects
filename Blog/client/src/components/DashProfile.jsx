@@ -180,17 +180,18 @@ export default function DashProfile() {
         )}
         <TextInput type='text' id='username' placeholder='Username' defaultValue={currentUser.username} onChange={handleChange} />
         <TextInput type='email' id='email' placeholder='Email' defaultValue={currentUser.email} onChange={handleChange} />
+        <TextInput type='text' id='about' placeholder='About me' defaultValue={currentUser.about} onChange={handleChange} />
         <TextInput type='password' id='password' placeholder='********' onChange={handleChange} />
         <Button type='submit' gradientDuoTone={'purpleToBlue'} outline disabled={loading || imageFileUploading}>
           {loading? 'Loading...' : 'Update'}
         </Button>
-        {currentUser.isAdmin && (
-          <Link to={'/createpost'}>
-            <Button type='submit' gradientDuoTone={'purpleToPink'} className='w-full'>
-              Create a Post
-            </Button>
-          </Link>
-        )}
+        {/* Anyone can create a blog */}
+        <Link to={'/createpost'}>
+          <Button type='submit' gradientDuoTone={'purpleToPink'} className='w-full'>
+            Create a Post
+          </Button>
+        </Link>
+        {/* ***** */}
       </form>
       <div className='text-red-500 flex justify-between mt-5'>
         <span className='cursor-pointer' onClick={() => {setShowModal(true)}}>Delete Account</span>

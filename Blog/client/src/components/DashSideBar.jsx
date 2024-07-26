@@ -1,15 +1,17 @@
 import { Sidebar } from 'flowbite-react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useLocation } from 'react-router-dom'
-import { HiAnnotation, HiArrowSmRight, HiChartPie, HiDocumentText, HiOutlineUserGroup, HiUser } from 'react-icons/hi'
+import { HiAnnotation, HiArrowSmRight, HiBookmark, HiChartPie, HiDocumentText, HiOutlineUserGroup, HiUser } from 'react-icons/hi'
 import { useEffect, useState } from 'react'
 import { signoutSuccess } from '../redux/user/userSlice'
+import { FaBars } from 'react-icons/fa'
 
-export default function DashSideBar() {
+export default function DashSidebar() {
     const { currentUser } = useSelector((state) => state.user)
     const location = useLocation();
     const [tab, setTab] = useState('');
-    const dispatch = useDispatch()
+    const [showSidebar, setShowSidebar] = useState(false);
+    const dispatch = useDispatch();
     useEffect(()=>{
       const urlParams = new URLSearchParams(location.search);
       const tabFromUrl = urlParams.get('tab');
@@ -36,9 +38,14 @@ export default function DashSideBar() {
     }
 
     return (
-        <Sidebar className='w-full md:w-56'>
+        <div>
+            {showSidebar ? (
+            <Sidebar className='w-full h-screen md:w-56'>
             <Sidebar.Items>
                 <Sidebar.ItemGroup className='flex flex-col gap-1'>
+                <button onClick={() => setShowSidebar(false)}>
+                    <Sidebar.Item icon={FaBars}></Sidebar.Item>
+                </button>
                     {currentUser && currentUser.isAdmin && (
                         <Link to={'/dashboard?tab=dash'}>
                             <Sidebar.Item active={tab==='dash' || !tab} icon={HiChartPie} as='div'>
@@ -52,13 +59,19 @@ export default function DashSideBar() {
                             Profile
                         </Sidebar.Item>
                     </Link>
-                    {currentUser.isAdmin && (
+                    {currentUser && currentUser.isAdmin && (
                         <Link to={'/dashboard?tab=posts'}>
                             <Sidebar.Item active={tab==='posts'} icon={HiDocumentText} as='div'>
                                 Posts
                             </Sidebar.Item>
                         </Link>
                     )}
+                    <Link to={'/dashboard?tab=myposts'}>
+                        <Sidebar.Item active={tab==='myposts'} icon={HiBookmark} as='div'>
+                            My Posts
+                        </Sidebar.Item>
+                    </Link>
+                    
                     {currentUser.isAdmin && (
                         <>
                             <Link to={'/dashboard?tab=users'}>
@@ -79,5 +92,11 @@ export default function DashSideBar() {
                 </Sidebar.ItemGroup>
             </Sidebar.Items>
         </Sidebar>
+        ) : (
+            <button onClick={() => setShowSidebar(true)} className='w-6 m-5'>
+                <FaBars size={'sm'} className='' />
+            </button>
+        )}
+        </div>
     )
 }
