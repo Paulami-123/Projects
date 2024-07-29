@@ -3,11 +3,10 @@
 import FeedCard from "@/components/FeedCard/page";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
 import Image from "next/image";
-import React, { useCallback } from "react";
+import React from "react";
 import { BsTwitter } from "react-icons/bs";
 import { CgFormatSlash } from "react-icons/cg";
 import { CiUser } from "react-icons/ci";
-import { FiSearch } from "react-icons/fi";
 import { GoBell, GoBookmark, GoHome, GoSearch } from "react-icons/go";
 import { HiOutlineDotsCircleHorizontal } from "react-icons/hi";
 import { HiOutlineEnvelope, HiOutlineUsers } from "react-icons/hi2";
