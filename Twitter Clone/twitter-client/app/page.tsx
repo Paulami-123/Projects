@@ -1,10 +1,14 @@
+"use client"
+
 import FeedCard from "@/components/FeedCard/page";
-import React from "react";
+import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
+import Image from "next/image";
+import React, { useCallback } from "react";
 import { BsTwitter } from "react-icons/bs";
 import { CgFormatSlash } from "react-icons/cg";
 import { CiUser } from "react-icons/ci";
 import { FiSearch } from "react-icons/fi";
-import { GoBell, GoBookmark, GoHome } from "react-icons/go";
+import { GoBell, GoBookmark, GoHome, GoSearch } from "react-icons/go";
 import { HiOutlineDotsCircleHorizontal } from "react-icons/hi";
 import { HiOutlineEnvelope, HiOutlineUsers } from "react-icons/hi2";
 
@@ -15,34 +19,37 @@ interface TwittersidebarButton {
 
 const sidebarMenuItems: TwittersidebarButton[] = [{
   title: 'Home',
-  icon: <GoHome />
+  icon: <GoHome size={30} strokeWidth={0.75} />
 }, {
   title: 'Explore',
-  icon: <FiSearch />
+  icon: <GoSearch size={25} strokeWidth={0.75} />
 }, {
   title: 'Notifiactions',
-  icon: <GoBell />
+  icon: <GoBell size={25} strokeWidth={0.75} />
 }, {
   title: 'Messages',
-  icon: <HiOutlineEnvelope />
+  icon: <HiOutlineEnvelope size={25} strokeWidth={2} />
 }, {
   title: 'Grok',
-  icon: <CgFormatSlash className="outline outline-[0.5px] rounded-md" />
+  icon: <CgFormatSlash className="outline outline-[2px] rounded-md"  size={20} strokeWidth={1} />
 }, {
   title: 'Bookmarks',
-  icon: <GoBookmark />
+  icon: <GoBookmark size={25} strokeWidth={0.75} />
 }, {
   title: 'Communities',
-  icon: <HiOutlineUsers />
+  icon: <HiOutlineUsers size={25} strokeWidth={2} />
 }, {
   title: 'User',
-  icon: <CiUser />
+  icon: <CiUser size={25} strokeWidth={1} />
 }, {
   title: 'More',
-  icon: <HiOutlineDotsCircleHorizontal />
+  icon: <HiOutlineDotsCircleHorizontal size={25} strokeWidth={2} />
 }]
 
+
+
 export default function Home() {
+
   return (
     <div className="bg-black text-white px-5">
       <div className="grid grid-cols-12 gap-3 h-screen w-screen pl-40 pr-48">
@@ -55,7 +62,7 @@ export default function Home() {
               {sidebarMenuItems.map((item) => (
                 <li key={item.title} className="flex justify-start items-center gap-4 rounded-full hover:bg-gray-800 px-5 py-2 w-fit cursor-pointer">
                   <span>{item.icon}</span>
-                  <span>{item.title}</span>
+                  <span className="hidden lg:block">{item.title}</span>
                 </li>
               ))}
             </ul>
@@ -67,12 +74,34 @@ export default function Home() {
           </div>
         </div>
         <div className="col-span-6 mr-6 border-x-[1px] border-gray-600 h-screen overflow-scroll no-scrollbar">
+          <div>
+            <div className="border border-t border-gray-600 p-4 hover:bg-slate-900 transition-all cursor-pointer">
+              <div className="grid grid-cols-12 gap-3">
+                <div className="col-span-1">
+                    <Image src={'https://avatars.githubusercontent.com/u/161676355?v=4'}
+                    alt="user-image" height={50} width={50} className="outline outline-white rounded-full" />
+                </div>
+              </div>
+            </div>
+          </div>
           <FeedCard />
           <FeedCard />
           <FeedCard />
           <FeedCard />
         </div>
-        <div className="col-span-3"></div>
+        <div className="col-span-3 p-5 hidden lg:block">
+          <div className="p-5 bg-slate-700 rounded-lg">
+            <h1 className="my-2 text-xl font-bold">New to twitter?</h1>
+              <GoogleLogin
+                onSuccess={(credentialResponse) => {
+                  console.log(credentialResponse);
+                }}
+                onError={() => {
+                  console.log('Login Failed');
+                }}
+              />
+          </div>
+        </div>
       </div>
     </div>
   );
