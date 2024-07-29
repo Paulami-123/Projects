@@ -17,9 +17,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <GoogleOAuthProvider clientId="485996617241-n0vb77nf5u6fm4h59ojhqtt50r0h28nk.apps.googleusercontent.com">
-        <body className={inter.className} suppressHydrationWarning={true}>{children}</body>
-      </GoogleOAuthProvider>
+        <body className={inter.className} suppressHydrationWarning={true}>
+          <GoogleOAuthProvider clientId="485996617241-n0vb77nf5u6fm4h59ojhqtt50r0h28nk.apps.googleusercontent.com">
+            {children}
+          </GoogleOAuthProvider>
+        </body>
     </html>
   );
 }
