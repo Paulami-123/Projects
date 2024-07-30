@@ -5,7 +5,7 @@ export const types = `#graphql
         firstName: String!
         lastName: String
         email: String!
-        profileImage: String
+        profileImageURL: String
     }
 
 `;

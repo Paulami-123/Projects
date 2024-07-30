@@ -3,7 +3,9 @@
 import { graphqlClient } from "@/clients/api";
 import FeedCard from "@/components/FeedCard/page";
 import { verifyUserGoogleTokenQuery } from "@/graphql/query/user";
+import { useCurrentUser } from "@/hooks/user";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
+import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import React, { useCallback } from "react";
 import toast from "react-hot-toast";
@@ -48,11 +50,15 @@ const sidebarMenuItems: TwittersidebarButton[] = [{
   icon: <HiOutlineDotsCircleHorizontal size={25} strokeWidth={2} />
 }]
 
-
+const queryClient = new QueryClient()
 
 export default function Home() {
 
+  const existingUser = useCurrentUser();
+  const queryClient = useQueryClient();
+
   const handleLoginWithGoogle = useCallback(async(cred: CredentialResponse) => {
+    console.log(cred);
     const googleToken = cred.credential;
     if(!googleToken){
       return toast.error(`Google token not found`);
@@ -64,9 +70,12 @@ export default function Home() {
     if(verifyGoogleToken){
       window.localStorage.setItem('token', verifyGoogleToken);
     }
-  }, [])
+
+    await queryClient.invalidateQueries({ queryKey: ['Current-User'] });
+  }, [queryClient])
 
   return (
+    <QueryClientProvider client={queryClient}>
     <div className="bg-black text-white px-5">
       <div className="grid grid-cols-12 gap-3 h-screen w-screen pl-40 pr-48">
         <div className="col-span-3 pt-1">
@@ -88,6 +97,16 @@ export default function Home() {
               </button>
             </div>
           </div>
+          {existingUser && (
+            <div className="absolute bottom-5 flex gap-2 px-3 rounded-full hover:bg-gray-800 w-fit">
+              {existingUser.user && existingUser.user.profileImageURL && (
+                <Image className="rounded-full" src={existingUser.user.profileImageURL} alt={existingUser.user.firstName} height={50} width={50} />
+              )}
+              <div>
+                <h3 className="text-s font-bold">{existingUser.user?.firstName}</h3>
+              </div>
+            </div>
+          )}
         </div>
         <div className="col-span-6 mr-6 border-x-[1px] border-gray-600 h-screen overflow-scroll no-scrollbar">
           <div>
@@ -106,18 +125,15 @@ export default function Home() {
           <FeedCard />
         </div>
         <div className="col-span-3 p-5 hidden lg:block">
-          <div className="p-5 bg-slate-700 rounded-lg">
-            <h1 className="my-2 text-xl font-bold">New to twitter?</h1>
-              <GoogleLogin onSuccess={handleLoginWithGoogle}
-                // onSuccess={(credentialResponse) => {
-                //   handleLoginWithGoogle(credentialResponse)}}
-                onError={() => {
-                  console.log('Login Failed');
-                }}
-              />
-          </div>
+          {!existingUser && 
+            <div className="p-5 bg-slate-700 rounded-lg">
+              <h1 className="my-2 text-xl font-bold">New to twitter?</h1>
+              <GoogleLogin onSuccess={handleLoginWithGoogle} />
+            </div>
+          }
         </div>
       </div>
     </div>
+    </QueryClientProvider>
   );
 }
