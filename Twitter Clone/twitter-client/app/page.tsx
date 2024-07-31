@@ -2,10 +2,11 @@
 
 import { graphqlClient } from "@/clients/api";
 import FeedCard from "@/components/FeedCard/page";
+import PostCard from "@/components/PostCard/page";
 import { verifyUserGoogleTokenQuery } from "@/graphql/query/user";
 import { useCurrentUser } from "@/hooks/user";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
-import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
+import { QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import React, { useCallback } from "react";
 import toast from "react-hot-toast";
@@ -13,7 +14,7 @@ import { BsTwitter } from "react-icons/bs";
 import { CgFormatSlash } from "react-icons/cg";
 import { CiUser } from "react-icons/ci";
 import { GoBell, GoBookmark, GoHome, GoSearch } from "react-icons/go";
-import { HiOutlineDotsCircleHorizontal } from "react-icons/hi";
+import { HiDotsHorizontal, HiOutlineDotsCircleHorizontal } from "react-icons/hi";
 import { HiOutlineEnvelope, HiOutlineUsers } from "react-icons/hi2";
 
 interface TwittersidebarButton {
@@ -50,11 +51,9 @@ const sidebarMenuItems: TwittersidebarButton[] = [{
   icon: <HiOutlineDotsCircleHorizontal size={25} strokeWidth={2} />
 }]
 
-const queryClient = new QueryClient()
-
 export default function Home() {
 
-  const existingUser = useCurrentUser();
+  const { user } = useCurrentUser();
   const queryClient = useQueryClient();
 
   const handleLoginWithGoogle = useCallback(async(cred: CredentialResponse) => {
@@ -97,27 +96,27 @@ export default function Home() {
               </button>
             </div>
           </div>
-          {existingUser && (
-            <div className="absolute bottom-5 flex gap-2 px-3 rounded-full hover:bg-gray-800 w-fit">
-              {existingUser.user && existingUser.user.profileImageURL && (
-                <Image className="rounded-full" src={existingUser.user.profileImageURL} alt={existingUser.user.firstName} height={50} width={50} />
+          {user && (
+            // <div className="absolute bottom-5 flex gap-2 px-3 rounded-full hover:bg-gray-800 w-fit">
+            <div className="absolute bottom-5 left-40 grid grid-cols-9 gap-2 hover:bg-gray-800 px-4 py-2 items-center rounded-full cursor-pointer">
+              {user && user.profileImageURL && (
+                <div className="col-span-2 pr-2">
+                  <Image className="rounded-full" src={user.profileImageURL} alt={user.firstName} height={50} width={50} />
+                </div>
               )}
-              <div>
-                <h3 className="text-s font-bold">{existingUser.user?.firstName}</h3>
+              <div className="col-span-6">
+                <h3 className="text-s font-bold">{user?.firstName}</h3>
+                <p className="text-gray-600">@paulami</p>
+              </div>
+              <div className="col-span-1">
+                <HiDotsHorizontal />
               </div>
             </div>
           )}
         </div>
         <div className="col-span-6 mr-6 border-x-[1px] border-gray-600 h-screen overflow-scroll no-scrollbar">
           <div>
-            <div className="border border-t border-gray-600 p-4 hover:bg-slate-900 transition-all cursor-pointer">
-              <div className="grid grid-cols-12 gap-3">
-                <div className="col-span-1">
-                    <Image src={'https://avatars.githubusercontent.com/u/161676355?v=4'}
-                    alt="user-image" height={50} width={50} className="outline outline-white rounded-full" />
-                </div>
-              </div>
-            </div>
+            <PostCard />
           </div>
           <FeedCard />
           <FeedCard />
@@ -125,7 +124,7 @@ export default function Home() {
           <FeedCard />
         </div>
         <div className="col-span-3 p-5 hidden lg:block">
-          {!existingUser && 
+          {!user && 
             <div className="p-5 bg-slate-700 rounded-lg">
               <h1 className="my-2 text-xl font-bold">New to twitter?</h1>
               <GoogleLogin onSuccess={handleLoginWithGoogle} />

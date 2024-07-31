@@ -11,7 +11,7 @@ const FeedCard: React.FC = () => {
             <div className="grid grid-cols-12 gap-2">
                 <div className="col-span-1">
                     <Image src={'https://avatars.githubusercontent.com/u/161676355?v=4'}
-                    alt="user-image" height={50} width={50} className="outline outline-white rounded-full" />
+                    alt="user-image" height={50} width={50} className="rounded-full" />
                 </div>
                 <div className="col-span-11 text-white">
                     <div className="flex gap-2">
