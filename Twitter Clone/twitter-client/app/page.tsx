@@ -67,7 +67,7 @@ export default function Home() {
     toast.success(`Verification Successful`);
     console.log(verifyGoogleToken);
     if(verifyGoogleToken){
-      window.localStorage.setItem('token', verifyGoogleToken);
+      window.localStorage.setItem('token', "Bearer "+verifyGoogleToken);
     }
 
     await queryClient.invalidateQueries({ queryKey: ['Current-User'] });
@@ -97,7 +97,6 @@ export default function Home() {
             </div>
           </div>
           {user && (
-            // <div className="absolute bottom-5 flex gap-2 px-3 rounded-full hover:bg-gray-800 w-fit">
             <div className="absolute bottom-5 left-40 grid grid-cols-9 gap-2 hover:bg-gray-800 px-4 py-2 items-center rounded-full cursor-pointer">
               {user && user.profileImageURL && (
                 <div className="col-span-2 pr-2">
@@ -115,9 +114,9 @@ export default function Home() {
           )}
         </div>
         <div className="col-span-6 mr-6 border-x-[1px] border-gray-600 h-screen overflow-scroll no-scrollbar">
-          <div>
+          {user && (<div>
             <PostCard />
-          </div>
+          </div>)}
           <FeedCard />
           <FeedCard />
           <FeedCard />

@@ -16,6 +16,29 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+export type CreatePostData = {
+  content: Scalars['String']['input'];
+  imageURL?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type Mutation = {
+  __typename?: 'Mutation';
+  createPost?: Maybe<Post>;
+};
+
+
+export type MutationCreatePostArgs = {
+  payload: CreatePostData;
+};
+
+export type Post = {
+  __typename?: 'Post';
+  author?: Maybe<User>;
+  content: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  imageURL?: Maybe<Scalars['String']['output']>;
+};
+
 export type Query = {
   __typename?: 'Query';
   getCurrentUser?: Maybe<User>;
@@ -33,7 +56,9 @@ export type User = {
   firstName: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   lastName?: Maybe<Scalars['String']['output']>;
+  posts?: Maybe<Array<Maybe<Post>>>;
   profileImageURL?: Maybe<Scalars['String']['output']>;
+  username?: Maybe<Scalars['String']['output']>;
 };
 
 export type VerifyUserGoogleTokenQueryVariables = Exact<{

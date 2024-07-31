@@ -2,6 +2,7 @@ import axios from 'axios';
 import { prismaClient } from '../../client/db';
 import JWTService from '../../services/jwt';
 import { GraphQLContext } from '../../interfaces';
+import { User } from '@prisma/client';
 
 
 interface GoogleTokenResult {
@@ -42,12 +43,14 @@ const queries = {
             }
         });
         if(!existingUser){
+            const uname = data.given_name.toLowerCase().split(' ').join('') + Math.random().toString(9).slice(-4)
             await prismaClient.user.create({
                 data: {
                     email: data.email,
                     firstName: data.given_name,
                     lastName: data.family_name,
-                    profileImageURL: data.picture
+                    profileImageURL: data.picture,
+                    username: uname
                 },
             });
         }
@@ -77,4 +80,10 @@ const queries = {
     }
 };
 
-export const resolvers = { queries };
+const extraResolvers = {
+    User: {
+        posts: (parent: User) => prismaClient.post.findMany({where: {author: {id: parent.id}}})
+    }
+}
+
+export const resolvers = { queries, extraResolvers };
