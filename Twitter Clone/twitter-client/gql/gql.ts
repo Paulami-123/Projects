@@ -13,6 +13,8 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Therefore it is highly recommended to use the babel or swc plugin for production.
  */
 const documents = {
+    "\n    #graphql\n    mutation CreatePost($payload: CreatePostData!) {\n        createPost(payload: $payload) {\n            id\n        }\n    }\n": types.CreatePostDocument,
+    "\n  query GetAllPosts {\n    getAllPosts {\n      id\n      content\n      imageURL\n      author {\n        id\n        username\n        firstName\n        lastName\n        profileImageURL\n      }\n    }\n  }\n": types.GetAllPostsDocument,
     "\n    #graphql\n    query VerifyUserGoogleToken($token: String!){\n        verifyGoogleToken(token: $token)\n    }\n": types.VerifyUserGoogleTokenDocument,
     "\n    query GetCurrentUser {\n        getCurrentUser {\n            id\n            profileImageURL\n            email\n            firstName\n            lastName\n        }\n    }\n": types.GetCurrentUserDocument,
 };
@@ -31,6 +33,14 @@ const documents = {
  */
 export function graphql(source: string): unknown;
 
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    #graphql\n    mutation CreatePost($payload: CreatePostData!) {\n        createPost(payload: $payload) {\n            id\n        }\n    }\n"): (typeof documents)["\n    #graphql\n    mutation CreatePost($payload: CreatePostData!) {\n        createPost(payload: $payload) {\n            id\n        }\n    }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetAllPosts {\n    getAllPosts {\n      id\n      content\n      imageURL\n      author {\n        id\n        username\n        firstName\n        lastName\n        profileImageURL\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetAllPosts {\n    getAllPosts {\n      id\n      content\n      imageURL\n      author {\n        id\n        username\n        firstName\n        lastName\n        profileImageURL\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

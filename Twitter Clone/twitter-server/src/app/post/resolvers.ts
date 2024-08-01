@@ -7,6 +7,7 @@ interface CreatePostPayload{
     imageURL?: string
 }
 
+
 const queries = {
     getAllPosts: () => prismaClient.post.findMany({orderBy: {createdAt: 'desc'}})
 };
@@ -29,7 +30,11 @@ const mutations = {
 const extraResolvers = {
     Post: {
         author: (parent: Post) => prismaClient.user.findUnique({where: {id: parent.authorId}})
-    }
+    },
 }
 
-export const resolvers = { mutations, extraResolvers, queries }
+export const resolvers = { 
+    mutations, 
+    extraResolvers, 
+    queries 
+}

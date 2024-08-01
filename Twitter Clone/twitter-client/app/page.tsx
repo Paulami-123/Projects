@@ -3,14 +3,16 @@
 import { graphqlClient } from "@/clients/api";
 import FeedCard from "@/components/FeedCard/page";
 import PostCard from "@/components/PostCard/page";
+import { Post } from "@/gql/graphql";
 import { verifyUserGoogleTokenQuery } from "@/graphql/query/user";
+import { useGetAllPosts } from "@/hooks/post";
 import { useCurrentUser } from "@/hooks/user";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
 import { QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import toast from "react-hot-toast";
-import { BsTwitter } from "react-icons/bs";
+import { BsFeather, BsTwitter } from "react-icons/bs";
 import { CgFormatSlash } from "react-icons/cg";
 import { CiUser } from "react-icons/ci";
 import { GoBell, GoBookmark, GoHome, GoSearch } from "react-icons/go";
@@ -54,10 +56,10 @@ const sidebarMenuItems: TwittersidebarButton[] = [{
 export default function Home() {
 
   const { user } = useCurrentUser();
+  const { posts = [] } = useGetAllPosts();
   const queryClient = useQueryClient();
 
   const handleLoginWithGoogle = useCallback(async(cred: CredentialResponse) => {
-    console.log(cred);
     const googleToken = cred.credential;
     if(!googleToken){
       return toast.error(`Google token not found`);
@@ -67,7 +69,7 @@ export default function Home() {
     toast.success(`Verification Successful`);
     console.log(verifyGoogleToken);
     if(verifyGoogleToken){
-      window.localStorage.setItem('token', "Bearer "+verifyGoogleToken);
+      window.localStorage.setItem('token', verifyGoogleToken);
     }
 
     await queryClient.invalidateQueries({ queryKey: ['Current-User'] });
@@ -91,7 +93,7 @@ export default function Home() {
               ))}
             </ul>
             <div className="mt-5">
-              <button className="bg-[#1d9bf0] px-4 py-2 rounded-full w-4/5 font-semibold text-white text-lg hover:bg-[#1e93e3]">
+              <button className="bg-[#1d9bf0] px-4 py-3 rounded-full w-4/5 font-semibold text-white text-base hover:bg-[#1e93e3]">
                 Post
               </button>
             </div>
@@ -117,10 +119,7 @@ export default function Home() {
           {user && (<div>
             <PostCard />
           </div>)}
-          <FeedCard />
-          <FeedCard />
-          <FeedCard />
-          <FeedCard />
+          {posts && posts.map((post) => post ? <FeedCard key={post?.id} post={post as Post} /> : null)}
         </div>
         <div className="col-span-3 p-5 hidden lg:block">
           {!user && 

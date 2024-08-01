@@ -1,4 +1,5 @@
 export const types = `#graphql
+    scalar Date
 
     input CreatePostData {
         content:        String!

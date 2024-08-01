@@ -10,12 +10,16 @@ import { PiSmiley } from "react-icons/pi";
 import { RiCalendarScheduleLine } from "react-icons/ri";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import { TbListDetails } from "react-icons/tb";
+import { useCreatePost } from "@/hooks/post";
 
 const PostCard: React.FC = () => {
     const { user } = useCurrentUser();
     const [val, setVal] = useState("");
+    const [content, setContent] = useState('');
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
     useAutosizeTextArea(textAreaRef.current, val);
+
+    const { mutate } = useCreatePost()
 
     const handleChange = (evt: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = evt.target?.value;
@@ -28,7 +32,13 @@ const PostCard: React.FC = () => {
         input.setAttribute('type', 'file');
         input.setAttribute('accept', 'image/*');
         input.click();
-    }, [])
+    }, []);
+
+    const handleCreatePost = useCallback(() => {
+        mutate({
+            content,
+        })
+    }, [content, mutate]);
 
     return(
         <div className="border border-t border-gray-600 p-4 hover:bg-slate-900 transition-all cursor-pointer">
@@ -41,7 +51,11 @@ const PostCard: React.FC = () => {
                 </div>
                 <div className="col-span-11 text-white mt-2">
                     <textarea className="outline-none w-full bg-transparent text-xl" placeholder="What is happening?!"
-                     rows={1} ref={textAreaRef} onChange={handleChange} value={val} />
+                     rows={1} ref={textAreaRef} onChange={(e) => {
+                        handleChange;
+                        setVal(e.target.value)
+                        setContent(e.target.value);
+                     }} value={content} />
                     <div className="flex gap-1 items-center text-blue-400 pt-4 pb-3 border-b border-gray-600">
                         <FaGlobeAmericas size={14} />
                         <p className="text-sm">Everyone can reply</p>
@@ -57,7 +71,7 @@ const PostCard: React.FC = () => {
                         </div>
                         <div className="flex justify-between items-center gap-3 pl-3 border-l border-gray-600">
                             <IoIosAddCircleOutline title="Add" className="font-bold text-2xl text-blue-400" />
-                            <button className="bg-blue-400 hover:bg-[#5496e8] py-2 px-5 text-sm font-bold rounded-full">
+                            <button className="bg-blue-400 hover:bg-[#5496e8] py-2 px-5 text-sm font-bold rounded-full" onClick={handleCreatePost}>
                                 Post
                             </button>
                         </div>
