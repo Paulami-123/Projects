@@ -1,17 +1,8 @@
 "use client"
 
-import { graphqlClient } from "@/clients/api";
-import FeedCard from "@/components/FeedCard";
-import PostCard from "@/components/PostCard";
-import { Post } from "@/gql/graphql";
-import { verifyUserGoogleTokenQuery } from "@/graphql/query/user";
-import { useGetAllPosts } from "@/hooks/post";
 import { useCurrentUser } from "@/hooks/user";
-import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
-import { QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
-import React, { useCallback, useState } from "react";
-import toast from "react-hot-toast";
+import React from "react";
 import { BsFeather, BsTwitter } from "react-icons/bs";
 import { CgFormatSlash } from "react-icons/cg";
 import { CiUser } from "react-icons/ci";
@@ -53,33 +44,13 @@ const sidebarMenuItems: TwittersidebarButton[] = [{
   icon: <HiOutlineDotsCircleHorizontal size={25} strokeWidth={2} />
 }]
 
-export default function Home() {
+const MenuBar: React.FC = () => {
 
-  const { user } = useCurrentUser();
-  const { posts = [] } = useGetAllPosts();
-  const queryClient = useQueryClient();
+    const { user } = useCurrentUser();
 
-  const handleLoginWithGoogle = useCallback(async(cred: CredentialResponse) => {
-    const googleToken = cred.credential;
-    if(!googleToken){
-      return toast.error(`Google token not found`);
-    }
-    const { verifyGoogleToken } = await graphqlClient.request(verifyUserGoogleTokenQuery, {token: googleToken});
-
-    toast.success(`Verification Successful`);
-    if(verifyGoogleToken){
-      window.localStorage.setItem('token', verifyGoogleToken);
-    }
-
-    await queryClient.invalidateQueries({ queryKey: ['Current-User'] });
-  }, [queryClient])
-
-  return (
-    <QueryClientProvider client={queryClient}>
-    <div className="bg-black text-white px-5">
-      <div className="grid grid-cols-12 gap-3 h-screen w-screen pl-40 pr-48">
-        <div className="col-span-3 pt-1">
-          <div className="text-4xl h-fit w-fit rounded-full hover:bg-gray-200 dark:text-white p-4 cursor-pointer">
+    return (
+        <div>
+            <div className="text-4xl h-fit w-fit rounded-full hover:bg-gray-200 dark:text-white p-4 cursor-pointer">
             <BsTwitter />
           </div>
           <div className="mt-4 text-xl text-gray-200 pr-4">
@@ -104,7 +75,7 @@ export default function Home() {
             <div className="absolute bottom-5 left-40 grid grid-cols-9 gap-2 hover:bg-gray-800 px-4 py-2 items-center rounded-full cursor-pointer">
               {user && user.profileImageURL && (
                 <div className="col-span-2 pr-2">
-                  <Image className="rounded-full outline" src={user.profileImageURL} alt={user.firstName} height={50} width={50} />
+                  <Image className="rounded-full" src={user.profileImageURL} alt={user.firstName} height={50} width={50} />
                 </div>
               )}
               <div className="col-span-6 lg:visible">
@@ -117,22 +88,7 @@ export default function Home() {
             </div>
           )}
         </div>
-        <div className="col-span-6 mr-6 border-x-[1px] border-gray-600 h-screen overflow-scroll no-scrollbar">
-          {user && (<>
-            <PostCard />
-          </>)}
-          {posts && posts.map((post) => post ? <FeedCard key={post?.id} post={post as Post} /> : null)}
-        </div>
-        <div className="col-span-3 p-5 hidden lg:block">
-          {!user && 
-            <div className="p-5 bg-slate-700 rounded-lg">
-              <h1 className="my-2 text-xl font-bold">New to twitter?</h1>
-              <GoogleLogin onSuccess={handleLoginWithGoogle} />
-            </div>
-          }
-        </div>
-      </div>
-    </div>
-    </QueryClientProvider>
-  );
+    )
 }
+
+export default MenuBar;

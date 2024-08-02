@@ -37,7 +37,8 @@ const PostCard: React.FC = () => {
     const handleCreatePost = useCallback(() => {
         mutate({
             content,
-        })
+        });
+        setContent('');
     }, [content, mutate]);
 
     return(
