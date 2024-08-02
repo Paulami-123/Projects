@@ -65,9 +65,9 @@ const PostCard: React.FC = () => {
                         <div className="flex justify-start gap-3 font-bold text-xl text-blue-400 items-center">
                             <AiOutlinePicture title="Media" onClick={handleSelectImage} />
                             <HiMiniGif title="GIF" />
-                            <TbListDetails title="Poll" />
+                            <TbListDetails title="Poll" className="hidden md:block" />
                             <PiSmiley title="Emoji" />
-                            <RiCalendarScheduleLine title="Schedule" />
+                            <RiCalendarScheduleLine title="Schedule" className="hidden md:block" />
                             <CiLocationOn title="Location" />
                         </div>
                         <div className="flex justify-between items-center gap-3 pl-3 border-l border-gray-600">

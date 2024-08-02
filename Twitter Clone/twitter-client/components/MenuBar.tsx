@@ -78,11 +78,11 @@ const MenuBar: React.FC = () => {
                   <Image className="rounded-full" src={user.profileImageURL} alt={user.firstName} height={50} width={50} />
                 </div>
               )}
-              <div className="col-span-6 lg:visible">
+              <div className="col-span-6 hidden lg:block">
                 <h3 className="text-s font-bold">{user?.firstName}</h3>
                 <p className="text-gray-600">@paulami</p>
               </div>
-              <div className="col-span-1 lg:visible">
+              <div className="col-span-1 hidden lg:block">
                 <HiDotsHorizontal />
               </div>
             </div>

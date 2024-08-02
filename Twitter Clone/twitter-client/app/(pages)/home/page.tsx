@@ -1,8 +1,7 @@
 "use client"
 
 import FeedCard from '@/components/FeedCard';
-import PostCard from '@/components/PostCard'
-import SideBar from '@/components/SideBar'
+import PostCard from '@/components/PostCard';
 import { Post } from '@/gql/graphql';
 import { useGetAllPosts } from '@/hooks/post';
 import { useCurrentUser } from '@/hooks/user';

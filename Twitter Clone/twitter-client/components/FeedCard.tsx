@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from 'next/image'
 import { BiMessageRounded } from "react-icons/bi";
 import { FaRetweet } from "react-icons/fa6";
@@ -11,7 +11,34 @@ interface FeedCardProps {
 }
 
 const FeedCard: React.FC<FeedCardProps> = (props) => {
-    const { post } = props
+    const { post } = props;
+    const [postedOn, setPostedOn] = useState('');
+    useEffect(() => {
+        const hours = new Date(post.createdAt).getHours() - new Date().getHours();
+        if(hours>24){
+            if(hours<=48){
+                setPostedOn('Yesterday');
+            }
+            else if(hours>48 && hours<=24*7){
+                setPostedOn(`${hours/24}d ago`);
+            }
+            else{
+                setPostedOn(new Date().toDateString().substring(4));
+            }
+        }
+        else if(hours>=1 && hours<24){
+            setPostedOn(`${hours}h ago`)
+        }
+        else{
+            const minutes = new Date(post.createdAt).getMinutes() - new Date().getMinutes();
+            if(minutes<0){
+                setPostedOn("Just Now");
+            }
+            else{
+                setPostedOn(`${minutes}m ago`);
+            }
+        }
+    }, [])
     return(
         <div className="border border-t border-gray-600 p-4 hover:bg-slate-900 transition-all cursor-pointer">
             <div className="grid grid-cols-12 gap-2">
@@ -22,9 +49,11 @@ const FeedCard: React.FC<FeedCardProps> = (props) => {
                     )}
                 </div>
                 <div className="col-span-11 text-white">
-                    <div className="flex gap-2">
-                        <h5 className="font-bold">{post.author?.firstName+" "+post.author?.lastName}</h5>
-                        <h5 className="text-gray-500">{"@"+post.author?.username}</h5>
+                    <div className="flex gap-2 text-gray-500">
+                        <h5 className="font-bold text-white">{post.author?.firstName+" "+post.author?.lastName}</h5>
+                        <h5>{"@"+post.author?.username}</h5>
+                        <div>•</div>
+                        <h5>{postedOn}</h5>
                     </div>
                     <p>{post.content}</p>
                     <div className="flex justify-between mt-5 text-xl text-gray-500 items-center">

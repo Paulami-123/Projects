@@ -117,13 +117,13 @@ export default function Home() {
             </div>
           )}
         </div>
-        <div className="col-span-6 mr-6 border-x-[1px] border-gray-600 h-screen overflow-scroll no-scrollbar">
+        <div className="col-span-9 lg:col-span-6 mr-6 border-x-[1px] border-gray-600 h-screen overflow-scroll no-scrollbar">
           {user && (<>
             <PostCard />
           </>)}
           {posts && posts.map((post) => post ? <FeedCard key={post?.id} post={post as Post} /> : null)}
         </div>
-        <div className="col-span-3 p-5 hidden lg:block">
+        <div className="col-span-0 lg:col-span-3 lg:p-5">
           {!user && 
             <div className="p-5 bg-slate-700 rounded-lg">
               <h1 className="my-2 text-xl font-bold">New to twitter?</h1>

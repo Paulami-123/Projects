@@ -6,6 +6,7 @@ export const getAllPostsQuery = graphql(`
       id
       content
       imageURL
+      createdAt
       author {
         id
         username
