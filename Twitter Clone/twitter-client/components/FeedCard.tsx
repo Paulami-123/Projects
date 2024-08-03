@@ -15,19 +15,19 @@ const FeedCard: React.FC<FeedCardProps> = (props) => {
     const [postedOn, setPostedOn] = useState('');
     useEffect(() => {
         const hours = new Date(post.createdAt).getHours() - new Date().getHours();
-        if(hours>24){
-            if(hours<=48){
+        if(hours>=1){
+            if(hours>=1 && hours<24){
+                setPostedOn(`${hours}h ago`)
+            }
+            else if(hours>=24 && hours<48){
                 setPostedOn('Yesterday');
             }
-            else if(hours>48 && hours<=24*7){
+            else if(hours>=48 && hours<24*7){
                 setPostedOn(`${hours/24}d ago`);
             }
             else{
                 setPostedOn(new Date().toDateString().substring(4));
             }
-        }
-        else if(hours>=1 && hours<24){
-            setPostedOn(`${hours}h ago`)
         }
         else{
             const minutes = new Date(post.createdAt).getMinutes() - new Date().getMinutes();

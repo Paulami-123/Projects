@@ -78,7 +78,7 @@ export default function Home() {
     <QueryClientProvider client={queryClient}>
     <div className="bg-black text-white px-5">
       <div className="grid grid-cols-12 gap-3 h-screen w-screen pl-40 pr-48">
-        <div className="col-span-3 pt-1">
+        <div className="col-span-2 lg:col-span-3 pt-1 relative">
           <div className="text-4xl h-fit w-fit rounded-full hover:bg-gray-200 dark:text-white p-4 cursor-pointer">
             <BsTwitter />
           </div>
@@ -101,29 +101,29 @@ export default function Home() {
             </div>
           </div>
           {user && (
-            <div className="absolute bottom-5 left-40 grid grid-cols-9 gap-2 hover:bg-gray-800 px-4 py-2 items-center rounded-full cursor-pointer">
+            <div className="absolute bottom-5 grid grid-cols-9 gap-2 hover:bg-gray-800 lg:px-4 lg:py-2 items-center rounded-full cursor-pointer">
               {user && user.profileImageURL && (
-                <div className="col-span-2 pr-2">
+                <div className="col-span-9 lg:col-span-2 lg:pr-2">
                   <Image className="rounded-full outline" src={user.profileImageURL} alt={user.firstName} height={50} width={50} />
                 </div>
               )}
-              <div className="col-span-6 lg:visible">
+              <div className="col-span-0 hidden lg:block lg:col-span-6">
                 <h3 className="text-s font-bold">{user?.firstName}</h3>
-                <p className="text-gray-600">@paulami</p>
+                <p className="text-gray-600">@{user.username}</p>
               </div>
-              <div className="col-span-1 lg:visible">
+              <div className="col-span-0 hidden lg:block lg:col-span-1">
                 <HiDotsHorizontal />
               </div>
             </div>
           )}
         </div>
-        <div className="col-span-9 lg:col-span-6 mr-6 border-x-[1px] border-gray-600 h-screen overflow-scroll no-scrollbar">
+        <div className="col-span-10 lg:col-span-6 mx-6 border-x-[1px] border-gray-600 h-screen overflow-scroll no-scrollbar">
           {user && (<>
             <PostCard />
           </>)}
           {posts && posts.map((post) => post ? <FeedCard key={post?.id} post={post as Post} /> : null)}
         </div>
-        <div className="col-span-0 lg:col-span-3 lg:p-5">
+        <div className="col-span-0 lg:col-span-3 p-5 hidden lg:block">
           {!user && 
             <div className="p-5 bg-slate-700 rounded-lg">
               <h1 className="my-2 text-xl font-bold">New to twitter?</h1>
