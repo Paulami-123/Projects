@@ -26,7 +26,7 @@ interface GoogleTokenResult {
 }
 
 const queries = {
-    verifyGoogleToken: async(parent: any, {token}: {token: string}) => {
+    verifyGoogleToken: async(parent: any, { token }: { token: string }) => {
         const googleToken = token;
         const googleOAuthURL = new URL('https://oauth2.googleapis.com/tokeninfo');
         googleOAuthURL.searchParams.set('id_token', googleToken);
@@ -77,6 +77,15 @@ const queries = {
         });
 
         return userData;
+    },
+
+    getUserByUsername: async(parent: any, { username }: { username: string }, ctx: GraphQLContext) =>{
+        const user = prismaClient.user.findUnique({ 
+            where: { 
+                username: username 
+            } 
+        });
+        return user;
     }
 };
 

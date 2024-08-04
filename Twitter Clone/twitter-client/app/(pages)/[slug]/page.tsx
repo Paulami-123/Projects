@@ -1,26 +1,53 @@
 "use client"
 
+import { graphqlClient } from "@/clients/api";
 import FeedCard from "@/components/FeedCard";
 import { Post } from "@/gql/graphql";
-import { useCurrentUser } from "@/hooks/user";
+import { getUserByUsernameQuery } from "@/graphql/query/user";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { notFound, usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { GoArrowLeft } from "react-icons/go";
 import { HiOutlineDotsHorizontal } from "react-icons/hi";
 
-export default function(){
-    const { user } = useCurrentUser();
-    const pathName = usePathname();
-    console.log(pathName);
+interface ServerProps {
+    username: string
+    id: string
+    firstName: string
+    lastName: string
+    profileImageURL: string
+    createdAt: string
+    posts: Post[]
+}
+
+const UserProfilePage = () =>{
+    const [user, setUser] = useState<ServerProps>();
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    const pathname = usePathname();
+        if(!pathname){
+            notFound();
+        }
+    useEffect(() => {
+        async function getData(username: string) {
+            const res:any = await graphqlClient.request(getUserByUsernameQuery, { username: username });
+            if(!res){
+                notFound();
+            }
+            setUser(res.getUserByUsername);
+        }
+        getData(pathname.substring(1));
+    }, []);
+
     return(
         <div>
             <div>
                 <nav className="text-xl flex items-center gap-8 p-1 m-2 cursor-pointer">
                     <GoArrowLeft strokeWidth={1} />
                     <div>
-                        <h1 className="font-bold text-gray-200">Paulami Banerjee</h1>
-                        <p className="text-sm text-gray-500">2,000 posts</p>
+                        <h1 className="font-bold text-gray-200">{user?.firstName} {user?.lastName}</h1>
+                        <p className="text-sm text-gray-500">{user?.posts.length} posts</p>
                     </div>
                 </nav>
                 <div className="relative">
@@ -47,7 +74,7 @@ export default function(){
                                 <p className="pt-5 text-gray-200">Hey there! I am using Twitter Clone</p>
                                 <div className="pt-2 flex gap-1 items-center">
                                     <FaRegCalendarAlt className="" />
-                                    <p>Joined Aug 2024</p>
+                                    <p>Joined {months[new Date(user.createdAt).getMonth()-1]} {new Date(user.createdAt).getFullYear()}</p>
                                 </div>
                                 <div className="flex pt-2 gap-4">
                                     <div className="flex gap-1">
@@ -67,9 +94,11 @@ export default function(){
                     </div>
                 </div>
                 {user&& user.posts?.map((post) => (
-                    <FeedCard key={post?.id} post={post as Post} />
+                    <FeedCard key={post?.id} post={post as Post} redirect={false} />
                 )) }
             </div>
         </div>
     )
 }
+
+export default UserProfilePage;

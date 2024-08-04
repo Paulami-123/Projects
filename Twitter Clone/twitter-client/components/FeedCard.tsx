@@ -5,13 +5,15 @@ import { FaRetweet } from "react-icons/fa6";
 import { IoHeartOutline } from "react-icons/io5";
 import { GoBookmark, GoUpload } from "react-icons/go";
 import { Post } from "@/gql/graphql";
+import Link from "next/link";
 
 interface FeedCardProps {
     post: Post
+    redirect: boolean
 }
 
 const FeedCard: React.FC<FeedCardProps> = (props) => {
-    const { post } = props;
+    const post = props.post;
     const [postedOn, setPostedOn] = useState('');
     useEffect(() => {
         const hours = new Date(post.createdAt).getHours() - new Date().getHours();
@@ -50,7 +52,10 @@ const FeedCard: React.FC<FeedCardProps> = (props) => {
                 </div>
                 <div className="col-span-11 text-white">
                     <div className="flex gap-2 text-gray-500">
-                        <h5 className="font-bold text-white">{post.author?.firstName+" "+post.author?.lastName}</h5>
+                        <Link href={`/${post.author.username}`}
+                        className="font-bold text-white hover:underline" tabIndex={props.redirect? undefined: -1}>
+                            {post.author?.firstName+" "+post.author?.lastName}
+                        </Link>
                         <h5>{"@"+post.author?.username}</h5>
                         <div>•</div>
                         <h5>{postedOn}</h5>

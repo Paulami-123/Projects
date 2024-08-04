@@ -18,7 +18,7 @@ export default function Home() {
           <PostCard />
         </div>
       )}
-      {posts && posts.map((post) => post ? <FeedCard key={post?.id} post={post as Post} /> : null)}
+      {posts && posts.map((post) => post ? <FeedCard key={post?.id} post={post as Post} redirect={true} /> : null)}
     </>
   )
 

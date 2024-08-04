@@ -30,3 +30,30 @@ export const getCurrentUserQuery = graphql(`
         }
     }
 `);
+
+export const getUserByUsernameQuery = graphql(`
+    #graphql
+    query GetUserByUsername($username: String!){
+        getUserByUsername(username: $username) {
+            username
+            id
+            firstName
+            lastName
+            profileImageURL
+            createdAt
+            posts {
+                id
+                content
+                imageURL
+                createdAt
+                author {
+                    id
+                    username
+                    firstName
+                    lastName
+                    profileImageURL
+                }
+            }
+        }
+    }
+`)
