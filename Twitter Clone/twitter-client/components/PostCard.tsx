@@ -19,7 +19,7 @@ const PostCard: React.FC = () => {
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
     useAutosizeTextArea(textAreaRef.current, val);
 
-    const { mutate } = useCreatePost()
+    const { mutate } = useCreatePost();
 
     const handleChange = (evt: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = evt.target?.value;

@@ -20,6 +20,8 @@ model User {
   lastName            String?
   username            String        @unique
   email               String        @unique
+  password            String?
+  about               String?
   profileImageURL     String?
   posts               Post[]
   createdAt           DateTime      @default(now())

@@ -24,6 +24,7 @@ export async function initServer(){
 
             type Mutation {
                 ${Post.mutations}
+                ${User.mutations}
             }
         `,
         resolvers: {
@@ -32,6 +33,7 @@ export async function initServer(){
                 ...Post.resolvers.queries
             },
             Mutation: {
+                ...User.resolvers.mutations,
                 ...Post.resolvers.mutations
             },
             ...Post.resolvers.extraResolvers,

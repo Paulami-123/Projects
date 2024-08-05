@@ -12,4 +12,15 @@ export const types = `#graphql
         createdAt:          Date
     }
 
+    input SignInDetails {
+        email:              String!
+        password:           String!
+    }
+
+    input SignUpDetails {
+        firstName:          String!
+        lastName:           String
+        email:              String!
+        password:           String!
+    }
 `;

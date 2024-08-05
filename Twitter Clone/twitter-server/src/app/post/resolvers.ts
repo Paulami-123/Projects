@@ -25,13 +25,13 @@ const mutations = {
 
         return post;
     }
-}
+};
 
 const extraResolvers = {
     Post: {
         author: (parent: Post) => prismaClient.user.findUnique({where: {id: parent.authorId}})
     },
-}
+};
 
 export const resolvers = { 
     mutations, 
