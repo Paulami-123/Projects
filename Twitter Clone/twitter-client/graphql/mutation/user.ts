@@ -25,6 +25,18 @@ export const updateUserMutation = graphql(`
             name
             about
             username
+            followers {
+                id
+                name
+                profileImageURL
+                coverImageURL
+            }
+            following {
+                id
+                name
+                profileImageURL
+                coverImageURL
+            }
             posts{
                 id
                 content
@@ -37,5 +49,19 @@ export const updateUserMutation = graphql(`
                 }
             }
         }
+    }
+`);
+
+export const followUserMutation = graphql(`
+    #graphql
+    mutation FollowUser($to: ID!){
+        followUser(to: $to)
+    }
+`);
+
+export const unfollowUserMutation = graphql(`
+    #graphql
+    mutation UnfollowUser($to: ID!){
+        unfollowUser(to: $to)
     }
 `);

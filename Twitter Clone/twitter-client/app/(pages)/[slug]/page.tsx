@@ -2,13 +2,13 @@
 
 import { graphqlClient } from "@/clients/api";
 import FeedCard from "@/components/FeedCard";
-import { Post } from "@/gql/graphql";
+import { Post, User } from "@/gql/graphql";
 import { getUserByUsernameQuery } from "@/graphql/query/user";
 import { useCurrentUser, useUpdateUser } from "@/hooks/user";
 import { Modal } from "flowbite-react";
 import Image from "next/image";
 import { notFound, usePathname } from "next/navigation";
-import React, { ChangeEvent, MouseEvent, useCallback, useEffect, useState } from "react";
+import React, { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { GoArrowLeft } from "react-icons/go";
 import { HiOutlineDotsHorizontal } from "react-icons/hi";
@@ -18,16 +18,12 @@ import { saveAs } from 'file-saver';
 import { ref } from "vue";
 import { supabase } from "@/supabase";
 import toast from "react-hot-toast";
+import { userInfo } from "os";
+import { followUserMutation, unfollowUserMutation } from "@/graphql/mutation/user";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ServerProps {
-    username: string
-    id: string
-    name: string
-    about: string
-    profileImageURL: string
-    coverImageURL: string
-    createdAt: string
-    posts: Post[]
+    userInfo?: User
 }
 
 interface EditInformation {
@@ -43,7 +39,7 @@ interface ImageTypeOptions {
 }
 
 const UserProfilePage = () =>{
-    const { user } = useCurrentUser();
+    const { user: currentUser } = useCurrentUser();
     const [userData, setUserData] = useState<ServerProps>();
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const [showEditModal, setShowEditModal] = useState(false);
@@ -56,9 +52,10 @@ const UserProfilePage = () =>{
         id: '',
         name: '',
         about: '',
-        coverImageURL: '#',
-        profileImageURL: '#'
+        coverImageURL: '',
+        profileImageURL: ''
     });
+    const queryClient = useQueryClient();
 
     const pathname = usePathname();
         if(!pathname){
@@ -72,11 +69,11 @@ const UserProfilePage = () =>{
             }
             setUserData(res.getUserByUsername);
             setEditData({
-                id: userData?.id || '',
-                name: userData?.name || '',
-                about: userData?.about || '',
-                profileImageURL: userData?.profileImageURL || '#',
-                coverImageURL: userData?.coverImageURL || '#'
+                id: userData?.userInfo?.id || '',
+                name: userData?.userInfo?.name || '',
+                about: userData?.userInfo?.about || '',
+                profileImageURL: userData?.userInfo?.profileImageURL || '#',
+                coverImageURL: userData?.userInfo?.coverImageURL || '#'
             });
         }
         getData(pathname.substring(1));
@@ -139,7 +136,24 @@ const UserProfilePage = () =>{
             data: editData
         });
         setEditData({id: '', name: '', about: '', profileImageURL: '', coverImageURL: ''});
-      }, [mutateAsync])
+      }, [mutateAsync]);
+
+      const amIFollowing = useMemo(() => {
+        if(!userData?.userInfo) return false;
+        return (userData.userInfo.followers?.findIndex(el => el?.id===userData.userInfo?.id) ?? -1)>0;
+      }, [currentUser?.id, userData?.userInfo]);
+
+      const handleFollowUser = useCallback(async() => {
+        if(!userData?.userInfo?.id) return;
+        await graphqlClient.request(followUserMutation, {to: userData?.userInfo.id});
+        await queryClient.invalidateQueries({queryKey: ['current-user']});
+      }, [userData?.userInfo?.id, queryClient]);
+
+      const handleUnfollowUser = useCallback(async() => {
+        if(!userData?.userInfo?.id) return;
+        await graphqlClient.request(unfollowUserMutation, {to: userData?.userInfo.id});
+        await queryClient.invalidateQueries({queryKey: ['current-user']});
+      }, [userData?.userInfo?.id, queryClient]);
 
     return(
         <div>
@@ -147,26 +161,34 @@ const UserProfilePage = () =>{
                 <nav className="text-xl flex items-center gap-8 p-1 m-2 cursor-pointer">
                     <GoArrowLeft strokeWidth={1} />
                     <div>
-                        <h1 className="font-bold text-gray-200">{userData?.name}</h1>
-                        <p className="text-sm text-gray-500">{userData?.posts.length} posts</p>
+                        <h1 className="font-bold text-gray-200">{userData?.userInfo?.name}</h1>
+                        <p className="text-sm text-gray-500">{userData?.userInfo?.posts?.length} posts</p>
                     </div>
                 </nav>
                 <div className="relative">
-                    <img src={userData?.coverImageURL}
+                    <img src={userData?.userInfo?.coverImageURL}
                     className="w-full object-fill h-48" />
                     <div className="flex justify-between items-center">
                         <div className="absolute top-32 left-5">
-                            {userData?.profileImageURL && (
-                                <Image src={userData.profileImageURL} alt={userData.username} height={125} width={125} className="rounded-full border-black border-4" />
+                            {userData?.userInfo?.profileImageURL && (
+                                <Image src={userData.userInfo?.profileImageURL} alt={userData.userInfo?.username} height={125} width={125} className="rounded-full border-black border-4" />
                             )}
                         </div>
                         <div className="absolute top-48 pt-2 right-5 text-2xl items-center">
-                            {user?.username===userData?.username ? (
+                            {currentUser?.username===userData?.userInfo?.username ? (
                                 <button className="text-sm font-bold py-2 px-4 rounded-full border-gray-300 text-white" onClick={() => setShowEditModal(true)}>Edit Profile</button>
                             ) : (
                                 <div className="flex gap-4 ">
                                     <HiOutlineDotsHorizontal className="rounded-full border border-gray-500" />
-                                    <button className="text-sm font-bold py-2 px-4 rounded-full bg-white text-black" onClick={() => setShowEditModal(true)}>Follow</button>
+                                    {amIFollowing ? (
+                                        <button onClick={handleFollowUser} className="text-sm font-bold py-2 px-4 rounded-full bg-white text-black">
+                                            Follow
+                                        </button>
+                                    ) : (
+                                        <button onClick={handleUnfollowUser} className="text-sm font-bold py-2 px-4 rounded-full bg-white text-black">
+                                            Unfollow
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -176,20 +198,20 @@ const UserProfilePage = () =>{
                     <div className="pt-20 pl-5">
                         {userData && (
                             <div className="text-sm text-gray-400">
-                                <h1 className="text-xl font-bold text-gray-200">{userData.name}</h1>
-                                <p>@{userData.username}</p>
+                                <h1 className="text-xl font-bold text-gray-200">{userData.userInfo?.name}</h1>
+                                <p>@{userData.userInfo?.username}</p>
                                 <p className="pt-5 text-gray-200">Hey there! I am using Twitter Clone</p>
                                 <div className="pt-2 flex gap-1 items-center">
                                     <FaRegCalendarAlt className="" />
-                                    <p>Joined {months[new Date(userData.createdAt).getMonth()-1]} {new Date(userData.createdAt).getFullYear()}</p>
+                                    <p>Joined {months[new Date(userData.userInfo?.createdAt).getMonth()-1]} {new Date(userData.userInfo?.createdAt).getFullYear()}</p>
                                 </div>
                                 <div className="flex pt-2 gap-4">
                                     <div className="flex gap-1">
-                                        <p className="font-bold text-gray-200">450</p> 
+                                        <p className="font-bold text-gray-200">{userData.userInfo?.following?.length}</p> 
                                         <p>Following</p>
                                     </div>
                                     <div className="flex gap-1">
-                                        <p className="font-bold text-gray-200">450</p> 
+                                        <p className="font-bold text-gray-200">{userData.userInfo?.followers?.length}</p> 
                                         <p>Followers</p>
                                     </div>
                                 </div>
@@ -200,7 +222,7 @@ const UserProfilePage = () =>{
                         )}
                     </div>
                 </div>
-                {userData&& userData.posts?.map((post) => (
+                {userData?.userInfo&& userData.userInfo?.posts?.map((post) => (
                     <FeedCard key={post?.id} post={post as Post} redirect={false} />
                 )) }
             </div>

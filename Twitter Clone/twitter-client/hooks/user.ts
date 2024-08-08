@@ -14,6 +14,10 @@ export const useCurrentUser = () => {
     return{ ...query, user: query.data?.getCurrentUser };
 };
 
+// export const useGetUserFromUsername = () => {
+//     const q
+// }
+
 export const useUpdateUser = () => {
     const queryClient = useQueryClient();
     const mutation = useMutation({
