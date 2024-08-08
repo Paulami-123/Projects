@@ -91,11 +91,11 @@ const MenuBar: React.FC = () => {
             <div className="absolute bottom-5 grid grid-cols-9 gap-2 hover:bg-gray-800 lg:px-4 lg:py-2 items-center rounded-full cursor-pointer">
               {user && user.profileImageURL && (
                 <div className="col-span-9 lg:col-span-2 lg:pr-2">
-                  <Image className="rounded-full outline" src={user.profileImageURL} alt={user.firstName} height={50} width={50} />
+                  <Image className="rounded-full outline" src={user.profileImageURL} alt={user.name} height={50} width={50} />
                 </div>
               )}
               <div className="col-span-0 hidden lg:block lg:col-span-6">
-                <h3 className="text-s font-bold">{user?.firstName}</h3>
+                <h3 className="text-s font-bold">{user.name}</h3>
                 <p className="text-gray-600">@{user.username}</p>
               </div>
               <div className="col-span-0 hidden lg:block lg:col-span-1">

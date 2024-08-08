@@ -47,20 +47,25 @@ const FeedCard: React.FC<FeedCardProps> = (props) => {
                 <div className="col-span-1">
                     {post.author?.profileImageURL && (
                         <Image src={post.author?.profileImageURL}
-                        alt={post.author.firstName+" "+post.author.lastName} height={50} width={50} className="rounded-full" />
+                        alt={post.author.name} height={50} width={50} className="rounded-full" />
                     )}
                 </div>
                 <div className="col-span-11 text-white">
                     <div className="flex gap-2 text-gray-500">
                         <Link href={`/${post.author.username}`}
                         className="font-bold text-white hover:underline" tabIndex={props.redirect? undefined: -1}>
-                            {post.author?.firstName+" "+post.author?.lastName}
+                            {post.author.name}
                         </Link>
                         <h5>{"@"+post.author?.username}</h5>
                         <div>•</div>
                         <h5>{postedOn}</h5>
                     </div>
                     <p>{post.content}</p>
+                    <div>
+                        {post?.images && post.images.map((img) => (
+                            <Image src={img || '#'} alt="image" width={125} height={125} className="w-full p-3" />
+                        ))}
+                    </div>
                     <div className="flex justify-between mt-5 text-xl text-gray-500 items-center">
                         <div>
                             <BiMessageRounded />

@@ -11,13 +11,13 @@
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/jsonwebtoken": "^9.0.6",
-    "prisma": "^5.17.0",
+    "prisma": "^5.18.0",
     "tsc-watch": "^6.2.0",
     "typescript": "^5.5.4"
   },
   "dependencies": {
     "@apollo/server": "^4.10.5",
-    "@prisma/client": "^5.17.0",
+    "@prisma/client": "^5.18.0",
     "axios": "^1.7.2",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",

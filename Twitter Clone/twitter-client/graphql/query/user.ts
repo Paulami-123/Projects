@@ -12,18 +12,18 @@ export const getCurrentUserQuery = graphql(`
         getCurrentUser {
             id
             profileImageURL
+            coverImageURL
             email
-            firstName
-            lastName
+            name
+            about
             username
             posts{
                 id
                 content
+                images
                 author {
                     id
                     username
-                    firstName
-                    lastName
                     profileImageURL
                 }
             }
@@ -37,20 +37,20 @@ export const getUserByUsernameQuery = graphql(`
         getUserByUsername(username: $username) {
             username
             id
-            firstName
-            lastName
+            name
+            about
             profileImageURL
+            coverImageURL
             createdAt
             posts {
                 id
                 content
-                imageURL
+                images
                 createdAt
                 author {
                     id
                     username
-                    firstName
-                    lastName
+                    name
                     profileImageURL
                 }
             }

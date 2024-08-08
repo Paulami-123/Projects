@@ -4,7 +4,7 @@ import { GraphQLContext } from "../../interfaces";
 
 interface CreatePostPayload{
     content: string
-    imageURL?: string
+    postImages?: string[]
 }
 
 
@@ -18,10 +18,12 @@ const mutations = {
         const post = await prismaClient.post.create({
             data: {
                 content: payload.content,
-                imageURL: payload.imageURL,
-                author: {connect: {id: ctx.user.id}}
-            },
+                images: payload.postImages,
+                author: {connect: {id: ctx.user.id}},
+            }
         });
+
+        if(!post) throw new Error ('Error while creating post.')
 
         return post;
     }

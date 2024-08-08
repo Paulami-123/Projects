@@ -6,6 +6,7 @@ import { signInTokenMutation, signUpTokenMutation } from "@/graphql/mutation/use
 import { verifyUserGoogleTokenQuery } from "@/graphql/query/user";
 import { useCurrentUser } from "@/hooks/user";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
+import { StorageClient } from "@supabase/storage-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { Modal } from "flowbite-react";
 import Link from "next/link";
@@ -22,8 +23,7 @@ interface SignInType {
 interface SignUpType {
   email: string,
   password: string,
-  firstName: string,
-  lastName?: string
+  name: string
 }
 
 export default function Home() {
@@ -43,8 +43,7 @@ export default function Home() {
   const [userSignUpDetails, setUserSignUpDetails] = useState<SignUpType>({
     email: '',
     password: '',
-    firstName: '',
-    lastName: ''
+    name: ''
   });
 
   const handleLoginWithGoogle = useCallback(async(cred: CredentialResponse) => {
@@ -76,14 +75,13 @@ export default function Home() {
       router.push('/home');
     }
     else{
-      toast.error('Error');
+      toast.error('Error while signing in.');
     }
 
     return;
   }, [queryClient]);
 
   const handleSignUp = useCallback(async(userData: SignUpType) => {
-    console.log(userData);
     const { userSignUpToken } = await graphqlClient.request(signUpTokenMutation, { userData });
 
     if(userSignUpToken){
@@ -93,7 +91,7 @@ export default function Home() {
       router.push('/home');
     }
     else{
-      toast.error('Error');
+      toast.error('Error while signing up.');
     }
     
     return;
@@ -185,14 +183,9 @@ export default function Home() {
                 </button>
                 <p>or</p>
                 <form>
-                  <div className="flex justify-between">
-                    <input type="text" required placeholder="First Name" onChange={(e) => {
-                    setUserSignUpDetails({...userSignUpDetails, firstName: e.target.value});
-                  }} className="border border-gray-600 rounded-lg bg-black p-4 w-32 my-4" />
-                    <input type="text" placeholder="Last name" onChange={(e) => {
-                    setUserSignUpDetails({...userSignUpDetails, lastName: e.target.value})
-                  }} className="border border-gray-600 rounded-lg bg-black p-4 w-32 my-4" />
-                  </div>
+                  <input type="text" required placeholder="Name" onChange={(e) => {
+                    setUserSignUpDetails({...userSignUpDetails, name: e.target.value});
+                  }} className="border border-gray-600 rounded-lg bg-black p-4 w-72 my-4" />
                   <input type="email" required placeholder="Email" onChange={(e) => {
                     setUserSignUpDetails({...userSignUpDetails, email: e.target.value})
                   }} className="border border-gray-600 rounded-lg bg-black p-4 w-72 my-4" />

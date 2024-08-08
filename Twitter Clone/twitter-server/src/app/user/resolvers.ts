@@ -3,6 +3,7 @@ import { prismaClient } from '../../client/db';
 import JWTService from '../../services/jwt';
 import { GraphQLContext } from '../../interfaces';
 import { User } from '@prisma/client';
+import UserServices from '../../services/user';
 
 
 interface GoogleTokenResult {
@@ -31,86 +32,40 @@ interface SignInDetails {
 }
 
 interface SignUpDetails {
-    firstName: string,
-    lastName?: string,
+    name: string,
     email: string,
     password: string
 }
 
+interface UserUpdate {
+    id: string,
+    name?: string,
+    about?: string,
+    profileImageURL: string,
+    coverImageURL?: string
+}
+
+const defaultProfileImage = "https://czzkufhubdhqzbdhwljm.supabase.co/storage/v1/object/public/twitter-images/Profile%20Image.jpg?t=2024-08-08T09%3A07%3A03.532Z";
+const defaultCoverImage = "https://czzkufhubdhqzbdhwljm.supabase.co/storage/v1/object/public/twitter-images/Cover%20Image.jfif?t=2024-08-08T09%3A06%3A47.410Z";
+
 const queries = {
 
     verifyGoogleToken: async(parent: any, { token }: { token: string }) => {
-        const googleToken = token;
-        const googleOAuthURL = new URL('https://oauth2.googleapis.com/tokeninfo');
-        googleOAuthURL.searchParams.set('id_token', googleToken);
-
-        const { data } = await axios.get<GoogleTokenResult>(
-            googleOAuthURL.toString(), {
-                responseType: 'json'
-            }
-        )
-
-        const existingUser = await prismaClient.user.findUnique({
-            where: {
-                email: data.email
-            }
-        });
-        if(!existingUser){
-            const uname = data.given_name.toLowerCase().split(' ').join('') + Math.random().toString(9).slice(-4);
-            const generatedPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
-            await prismaClient.user.create({
-                data: {
-                    email: data.email,
-                    firstName: data.given_name,
-                    lastName: data.family_name,
-                    about: "Hey there! I am using twitter clone",
-                    password: generatedPassword,
-                    profileImageURL: data.picture,
-                    username: uname
-                },
-            });
-        }
-
-        const userInfo = await prismaClient.user.findUnique({
-            where: {
-                email: data.email
-            }
-        });
-        if(!userInfo) throw new Error('User not found');
-        const userToken = JWTService.generateTokenForUser(userInfo);
-        console.log(userToken)
-
+        const userToken = await UserServices.verifyGoogleAuthToken(token);
         return userToken;
     },
 
     getCurrentUser: async(parent: any, args: any, ctx: GraphQLContext) => {
-        console.log(ctx);
         const id = ctx.user?.id;
         if(!id){
             return null;
         }
-        const userData = await prismaClient.user.findUnique({
-            where: {id}
-        });
-
+        const userData = await UserServices.getUserById(id);
         return userData;
     },
 
-    getUserByUsername: async(parent: any, { username }: { username: string }, ctx: GraphQLContext) =>{
-        const user = prismaClient.user.findUnique({ 
-            where: { 
-                username: username 
-            } 
-        });
-        return user;
-    }
+    getUserByUsername: async(parent: any, { username }: { username: string }, ctx: GraphQLContext) =>UserServices.getUserByUsername(username)
     
-};
-
-const extraResolvers = {
-    User: {
-        posts: (parent: User) => prismaClient.post.findMany({where: {author: {id: parent.id}}})
-    }
 };
 
 const mutations = {
@@ -124,16 +79,16 @@ const mutations = {
 
         if(existingUser) throw new Error ('User already exists. Try logging in instead.');
 
-        const uname = userData.firstName.toLowerCase().split(' ').join('') + Math.random().toString(9).slice(-4)
+        const uname = userData.name.toLowerCase().split(' ').join('') + Math.random().toString(9).slice(-4)
         const newUser = await prismaClient.user.create({
             data: {
-                firstName: userData.firstName,
-                lastName: userData.lastName,
+                name: userData.name,
                 about: "Hey there! I am using twitter clone",
                 username: uname,
                 email: userData.email,
                 password: userData.password,
-                profileImageURL: "https://static.vecteezy.com/system/resources/thumbnails/005/545/335/small/user-sign-icon-person-symbol-human-avatar-isolated-on-white-backogrund-vector.jpg"
+                profileImageURL: defaultProfileImage,
+                coverImageURL: defaultCoverImage,
             }
         });
 
@@ -154,7 +109,58 @@ const mutations = {
         const userToken = JWTService.generateTokenForUser(existingUser);
         return userToken;
     },
+
+    updateUserData: async(parent: any, {userData}: { userData: UserUpdate }, ctx: GraphQLContext) => {
+        if(!ctx.user || ctx.user.id!==userData.id)   throw new Error('You are not authenticated');
+        const updatedUser = await prismaClient.user.update({
+            where: {
+                id: userData.id
+            }, 
+            data: {
+                name: (userData.name && userData.name?.length>0) ? userData.name : undefined,
+                about: userData.about,
+                profileImageURL: userData.profileImageURL,
+                coverImageURL: userData.coverImageURL ? userData.coverImageURL : defaultCoverImage
+            }
+        });
+        if(!updatedUser) throw new Error ('Error while updating data');
+        return updatedUser;
+    },
+
+    followUser: async(parent: any, {to}: { to: string }, ctx: GraphQLContext) => {
+        if(!ctx.user || !ctx.user.id) throw new Error ('You are not authenticated');
+        await UserServices.followUser(ctx.user.id, to);
+        return true;
+    },
+
+    unfollowUser: async(parent: any, {to}: { to: string }, ctx: GraphQLContext) => {
+        if(!ctx.user || !ctx.user.id) throw new Error ('You are not authenticated');
+        await UserServices.unfollowUser(ctx.user.id, to);
+        return true;
+    },
     
+};
+
+const extraResolvers = {
+    User: {
+        posts: (parent: User) => prismaClient.post.findMany({where: {author: {id: parent.id}}}),
+        followers: async(parent: User) => {
+            const result = await prismaClient.follows.findMany({
+                where: { following: { id: parent.id } },
+                include: {follower: true}
+            });
+
+            return result.map((el) => el.follower)
+        },
+        following: async(parent: User) => {
+            const result = await prismaClient.follows.findMany({
+                where: { follower: { id: parent.id } },
+                include: {following: true}
+            });
+
+            return result.map((el) => el.following)
+        }, 
+    }
 };
 
 export const resolvers = { 

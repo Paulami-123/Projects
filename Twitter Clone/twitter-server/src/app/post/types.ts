@@ -3,13 +3,13 @@ export const types = `#graphql
 
     input CreatePostData {
         content:        String!
-        imageURL:       String
+        postImages:     [String]
     }
 
     type Post {
         id:             ID!
         content:        String!
-        imageURL:       String
+        images:         [String]
         author:         User!
         createdAt:      Date!
     }

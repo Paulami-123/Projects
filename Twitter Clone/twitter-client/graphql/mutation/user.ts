@@ -13,3 +13,29 @@ export const signInTokenMutation = graphql(`
         userSignInToken(userData: $userData)
     }
 `);
+
+export const updateUserMutation = graphql(`
+    #graphql
+    mutation UpdateUserData($userData: UserUpdate!){
+        updateUserData(userData: $userData){
+            id
+            profileImageURL
+            coverImageURL
+            email
+            name
+            about
+            username
+            posts{
+                id
+                content
+                images
+                author {
+                    id
+                    username
+                    name
+                    profileImageURL
+                }
+            }
+        }
+    }
+`);

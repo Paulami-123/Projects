@@ -5,13 +5,12 @@ export const getAllPostsQuery = graphql(`
     getAllPosts {
       id
       content
-      imageURL
+      images
       createdAt
       author {
         id
         username
-        firstName
-        lastName
+        name
         profileImageURL
       }
     }

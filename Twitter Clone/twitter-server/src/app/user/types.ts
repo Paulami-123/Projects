@@ -3,12 +3,15 @@ export const types = `#graphql
 
     type User {
         id:                 ID!
-        firstName:          String!
-        lastName:           String
-        email:              String!
-        profileImageURL:    String
+        name:               String!
         username:           String!
+        about:              String
+        email:              String!
+        profileImageURL:    String!
+        coverImageURL:      String!
         posts:              [Post]
+        followers:          [User]
+        following:          [User]
         createdAt:          Date
     }
 
@@ -18,9 +21,20 @@ export const types = `#graphql
     }
 
     input SignUpDetails {
-        firstName:          String!
-        lastName:           String
+        name:               String!
         email:              String!
         password:           String!
+    }
+
+    input UserUpdate {
+        data:              UpdateDataType
+    }
+
+    input UpdateDataType {
+        id:                 ID!
+        name:               String
+        about:              String
+        profileImageURL:    String
+        coverImageURL:      String
     }
 `;

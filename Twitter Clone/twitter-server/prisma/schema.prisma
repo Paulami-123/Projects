@@ -9,31 +9,42 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id                  String        @id @default(cuid())
-  firstName           String
-  lastName            String?
-  username            String        @unique
-  email               String        @unique
-  password            String?
-  about               String?
-  profileImageURL     String?
-  posts               Post[]
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  id              String    @id @default(cuid())
+  name            String
+  username        String    @unique
+  email           String    @unique
+  password        String
+  about           String?
+  profileImageURL String
+  coverImageURL   String
+  posts           Post[]
+  followers       Follows[] @relation("follower")
+  following       Follows[] @relation("following")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 model Post {
-  id                  String        @id @default(cuid())
-  content             String
-  imageURL            String?
-  authorId            String
-  author              User          @relation(fields: [authorId], references: [id])
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  id        String   @id @default(cuid())
+  content   String
+  images    String[]
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Follows {
+  followerId  String
+  follower    User   @relation("follower", fields: [followerId], references: [id])
+  followingId String
+  following   User   @relation("following", fields: [followingId], references: [id])
+
+  @@id([followerId, followingId])
 }
