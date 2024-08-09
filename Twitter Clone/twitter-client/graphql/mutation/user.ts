@@ -28,14 +28,14 @@ export const updateUserMutation = graphql(`
             followers {
                 id
                 name
+                username
                 profileImageURL
-                coverImageURL
             }
             following {
                 id
                 name
+                username
                 profileImageURL
-                coverImageURL
             }
             posts{
                 id

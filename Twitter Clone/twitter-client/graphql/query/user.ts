@@ -21,14 +21,20 @@ export const getCurrentUserQuery = graphql(`
             followers {
                 id
                 name
+                username
                 profileImageURL
-                coverImageURL
             }
             following {
                 id
                 name
+                username
                 profileImageURL
-                coverImageURL
+            }
+            recommendedUsers {
+                id
+                name
+                username
+                profileImageURL
             }
             posts{
                 id
@@ -57,14 +63,14 @@ export const getUserByUsernameQuery = graphql(`
             followers {
                 id
                 name
+                username
                 profileImageURL
-                coverImageURL
             }
             following {
                 id
                 name
+                username
                 profileImageURL
-                coverImageURL
             }
             createdAt
             posts {

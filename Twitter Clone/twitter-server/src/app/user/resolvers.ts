@@ -110,18 +110,8 @@ const mutations = {
     },
 
     updateUserData: async(parent: any, {userData}: { userData: UserUpdate }, ctx: GraphQLContext) => {
-        if(!ctx.user)   throw new Error('You are not authenticated');
-        const updatedUser = await prismaClient.user.update({
-            where: {
-                id: ctx.user.id
-            }, 
-            data: {
-                name: (userData.name && userData.name?.length>0) ? userData.name : undefined,
-                about: userData.about,
-                profileImageURL: userData.profileImageURL,
-                coverImageURL: userData.coverImageURL ? userData.coverImageURL : defaultCoverImage
-            }
-        });
+        if(!ctx.user || !ctx.user.id)   throw new Error('You are not authenticated');
+        const updatedUser = await UserServices.updateUser(ctx.user.id, userData)
         if(!updatedUser) throw new Error ('Error while updating data');
         return updatedUser;
     },
@@ -159,6 +149,36 @@ const extraResolvers = {
 
             return result.map((el) => el.following)
         }, 
+        recommendedUsers: async(parent: User, _: any, ctx: GraphQLContext) => {
+            if(!ctx) return [];
+            const myFollowings = await prismaClient.follows.findMany({
+                where: {
+                    follower: {id: ctx.user?.id}
+                },
+                include: {
+                    following: {
+                        include: {
+                            followers: {
+                                include: {
+                                    following: true
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            const users: User[] = [];
+            for (const followings of myFollowings){
+                for(const followingByFollowedUser of followings.following.followers){
+                    if(followingByFollowedUser.following.id!==ctx.user?.id 
+                        && 
+                    myFollowings.findIndex((e) => e.followingId===followingByFollowedUser.following.id)<0){
+                        users.push(followingByFollowedUser.following);
+                    }
+                }
+            }
+            return users;
+        }
     }
 };
 

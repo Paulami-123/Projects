@@ -22,6 +22,13 @@ interface GoogleTokenResult {
     typ?: string
 }
 
+interface UserUpdate {
+    name?: string,
+    about?: string,
+    profileImageURL: string,
+    coverImageURL?: string
+}
+
 const defaultProfileImage = "https://czzkufhubdhqzbdhwljm.supabase.co/storage/v1/object/public/twitter-images/Profile%20Image.jpg?t=2024-08-08T09%3A07%3A03.532Z";
 const defaultCoverImage = "https://czzkufhubdhqzbdhwljm.supabase.co/storage/v1/object/public/twitter-images/Cover%20Image.jfif?t=2024-08-08T09%3A06%3A47.410Z";
 
@@ -96,6 +103,20 @@ class UserServices {
                 followerId_followingId: {followerId: from, followingId: to}
             }
         })
+    }
+
+    public static updateUser (id: string, userData: UserUpdate){
+        return prismaClient.user.update({
+            where: {
+                id
+            }, 
+            data: {
+                name: userData.name,
+                about: userData.about,
+                profileImageURL: userData.profileImageURL,
+                coverImageURL: userData.coverImageURL
+            }
+        });
     }
 }
 

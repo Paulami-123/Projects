@@ -95,12 +95,22 @@ export default function EditDataModal( data: {username: string, show: boolean })
             toast.error(`Error while uploading image ${file.name}`);
         }
       }
+    
+    //   const handleSubmit = useCallback(async() => {
+    //     if(profileFile){
+    //         await generateURL(profileFile, 'profile');
+    //     }
+    //     if(coverFile){
+    //         await generateURL(coverFile, 'cover');
+    //     }
+    //     console.log(editData);
+    //   }, [mutateAsync]);
 
     const handleSubmit = async() => {
         const updatedData = await mutateAsync({
             data: editData
         });
-        console.log("Data after mutate: ", updatedData);
+        console.log("Data after mutate: ", updatedData.updateUserData);
         setEditData({name: '', about: '', coverImageURL: '', profileImageURL: ''});
         setShowConfirmModal(false);
         setShowEditModal(false);
