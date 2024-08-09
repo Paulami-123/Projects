@@ -38,7 +38,6 @@ interface SignUpDetails {
 }
 
 interface UserUpdate {
-    id: string,
     name?: string,
     about?: string,
     profileImageURL: string,
@@ -111,10 +110,10 @@ const mutations = {
     },
 
     updateUserData: async(parent: any, {userData}: { userData: UserUpdate }, ctx: GraphQLContext) => {
-        if(!ctx.user || ctx.user.id!==userData.id)   throw new Error('You are not authenticated');
+        if(!ctx.user)   throw new Error('You are not authenticated');
         const updatedUser = await prismaClient.user.update({
             where: {
-                id: userData.id
+                id: ctx.user.id
             }, 
             data: {
                 name: (userData.name && userData.name?.length>0) ? userData.name : undefined,

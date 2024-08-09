@@ -1,3 +1,5 @@
+'use client'
+
 import { graphqlClient } from "@/clients/api"
 import { CreatePostData } from "@/gql/graphql"
 import { createPostMutation } from "@/graphql/mutation/post"

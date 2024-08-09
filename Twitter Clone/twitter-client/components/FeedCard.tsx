@@ -6,10 +6,12 @@ import { IoHeartOutline } from "react-icons/io5";
 import { GoBookmark, GoUpload } from "react-icons/go";
 import { Post } from "@/gql/graphql";
 import Link from "next/link";
+import { GetServerSideProps } from "next";
+import { graphqlClient } from "@/clients/api";
+import { getAllPostsQuery } from "@/graphql/query/post";
 
 interface FeedCardProps {
     post: Post
-    redirect: boolean
 }
 
 const FeedCard: React.FC<FeedCardProps> = (props) => {
@@ -53,7 +55,7 @@ const FeedCard: React.FC<FeedCardProps> = (props) => {
                 <div className="col-span-11 text-white">
                     <div className="flex gap-2 text-gray-500">
                         <Link href={`/${post.author.username}`}
-                        className="font-bold text-white hover:underline" tabIndex={props.redirect? undefined: -1}>
+                        className="font-bold text-white hover:underline">
                             {post.author.name}
                         </Link>
                         <h5>{"@"+post.author?.username}</h5>
@@ -90,3 +92,12 @@ const FeedCard: React.FC<FeedCardProps> = (props) => {
 }
 
 export default FeedCard;
+
+export const getServerSideProps: GetServerSideProps = async(context) => {
+    const allPosts = await graphqlClient.request(getAllPostsQuery);
+    return {
+        props: {
+            posts: allPosts.getAllPosts
+        }
+    }
+}

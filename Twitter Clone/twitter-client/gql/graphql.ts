@@ -103,7 +103,6 @@ export type SignUpDetails = {
 export type UpdateDataType = {
   about?: InputMaybe<Scalars['String']['input']>;
   coverImageURL?: InputMaybe<Scalars['String']['input']>;
-  id: Scalars['ID']['input'];
   name?: InputMaybe<Scalars['String']['input']>;
   profileImageURL?: InputMaybe<Scalars['String']['input']>;
 };

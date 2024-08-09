@@ -77,7 +77,7 @@ class UserServices {
 
     public static async getUserByUsername(username: string){
         return prismaClient.user.findUnique({
-            where: { username }
+            where: { username: username }
         })
     }
 

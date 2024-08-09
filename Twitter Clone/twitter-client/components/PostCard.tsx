@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from 'next/image';
 import { useCurrentUser } from "@/hooks/user";
 import useAutosizeTextArea from "@/hooks/autoResize";
@@ -27,12 +27,6 @@ const PostCard: React.FC = () => {
 
     const { mutateAsync } = useCreatePost();
 
-    const handleChange = (evt: React.ChangeEvent<HTMLTextAreaElement>) => {
-        const value = evt.target?.value;
-    
-        setVal(value);
-    };
-
     const handleSelectImage = useCallback(() => {
         const input = document.createElement("input");
         input.setAttribute('type', 'file');
@@ -46,37 +40,19 @@ const PostCard: React.FC = () => {
     const handleUploadImages = useCallback((input: HTMLInputElement) => {
         return async(event: Event) => {
             event.preventDefault();
-            const files = input.files;
-            if(files){
-                setFiles(files);
-                Array.from(files).map((file) => {
-                    setPreviewImages([...previewImages, URL.createObjectURL(file)])
+            const fileList = input.files;
+            if(fileList){
+                setFiles(fileList);
+                Array.from(fileList).map((file) => {
+                    setPreviewImages(previewImages => [...previewImages, URL.createObjectURL(file)])
                 });
             }
+
         }
     }, [handleSelectImage]);
 
-    const generateURLs = async() => {
-        if(files){
-            Array.from(files).map(async(file) => {
-                const fileName = 'Image_'+new Date().getTime().toString() +file.name;
-                const { data } = await supabase.storage.from('twitter-images').upload(fileName, file);
-                if(data){
-                    const url = supabase.storage.from('twitter-images').getPublicUrl(fileName);
-                    imagesURL.push(url.data.publicUrl);
-                }
-                else{
-                    toast.error(`Error while uploading ${file.name}`);
-                    return 0;
-                }
-            });
-        }
-        return 1;
-      }
-
-    const handleCreatePost = useCallback(async() => {
-        const urlSuccess = await generateURLs();
-        if(urlSuccess===1){
+    useEffect(() => {
+        const createPost = async() =>{
             await mutateAsync({
                 content,
                 postImages: imagesURL
@@ -86,7 +62,28 @@ const PostCard: React.FC = () => {
             setFiles(null);
             setPreviewImages([]);
         }
-    }, [content, mutateAsync]);
+        if(files?.length===imagesURL.length){
+            createPost();
+        }
+    }, [imagesURL]);
+
+    const handleCreatePost = async() => {
+        if(files){
+            Array.from(files).map(async(file) => {
+                const fileName = 'Image_'+new Date().getTime().toString() +file.name;
+                const { data } = await supabase.storage.from('twitter-images').upload(fileName, file);
+                if(data){
+                    const url = supabase.storage.from('twitter-images').getPublicUrl(fileName);
+                    setImagesURL((prev) => [...prev, url.data.publicUrl]);
+                }
+                else{
+                    toast.error(`Error while uploading ${file.name}`);
+                    return;
+                }
+            });
+        }
+    };
+
 
     return(
         <div className="border border-t border-gray-600 p-4 hover:bg-slate-900 transition-all cursor-pointer">
@@ -100,19 +97,13 @@ const PostCard: React.FC = () => {
                 <div className="col-span-11 text-white mt-2">
                     <textarea className="outline-none w-full bg-transparent text-xl" placeholder="What is happening?!"
                      rows={1} ref={textAreaRef} onChange={(e) => {
-                        handleChange;
                         setVal(e.target.value)
                         setContent(e.target.value);
                      }} value={content} />
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 h-auto w-full">
+                    <div className="grid grid-cols-2 md:grid-cols-3 h-auto w-full">
                         {previewImages && previewImages.map((img) => (
-                            <div className="relative w-1/3" key={img}>
-                                <Image src={img} alt="image" width={100} height={100} className="h-auto max-w-full rounded-lg" />
-                                <IoCloseSharp key={img} onClick={() => {
-                                    setPreviewImages(previewImages.slice(previewImages.indexOf(img, 1)));
-                                    previewImages.map((image) => console.log(image));
-                                }}
-                                 className="absolute right-1 top-1 text-white rounded-full m-2 hover:bg-slate-800" />
+                            <div className="relative" key={img}>
+                                <Image src={img} alt="image" width={150} height={150} className="rounded-lg py-2" />
                             </div>
                         ))}
                     </div>
@@ -132,7 +123,7 @@ const PostCard: React.FC = () => {
                         <div className="flex justify-between items-center gap-3 pl-3 border-l border-gray-600">
                             <IoIosAddCircleOutline title="Add" className="font-bold text-2xl text-blue-400" />
                             <button className="bg-blue-400 hover:bg-[#5496e8] py-2 px-5 text-sm font-bold rounded-full" onClick={() => {
-                                content.length>0 ? handleCreatePost: toast.error('Add some content.')
+                                content.length>0 ? handleCreatePost(): toast.error('Add some content.')
                             }}>
                                 Post
                             </button>

@@ -31,7 +31,6 @@ export const types = `#graphql
     }
 
     input UpdateDataType {
-        id:                 ID!
         name:               String
         about:              String
         profileImageURL:    String
