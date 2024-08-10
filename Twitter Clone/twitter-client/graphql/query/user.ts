@@ -2,7 +2,7 @@ import { graphql } from "../../gql";
 
 export const verifyUserGoogleTokenQuery = graphql(`
     #graphql
-    query VerifyUserGoogleToken($token: String!){
+    query VerifyUserGoogleToken($token: String!) {
         verifyGoogleToken(token: $token)
     }
 `);
@@ -88,3 +88,10 @@ export const getUserByUsernameQuery = graphql(`
         }
     }
 `);
+
+export const deleteUserAccountQuery = graphql(`
+    #graphql
+    query DeleteUserAccount{
+        deleteUserAccount
+    }
+`)

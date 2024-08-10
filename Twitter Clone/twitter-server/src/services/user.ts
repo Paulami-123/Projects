@@ -1,8 +1,9 @@
 import axios from "axios";
 import { prismaClient } from "../client/db";
 import JWTService from "./jwt";
+import { redisClient } from "../client/redis";
 
-interface GoogleTokenResult {
+export interface GoogleTokenResult {
     iss?: string,
     nbf?: string,
     aud?: string,
@@ -22,11 +23,13 @@ interface GoogleTokenResult {
     typ?: string
 }
 
-interface UserUpdate {
-    name?: string,
+export interface UserUpdate {
+    data: {
+        name?: string,
     about?: string,
-    profileImageURL: string,
+    profileImageURL?: string,
     coverImageURL?: string
+    }
 }
 
 const defaultProfileImage = "https://czzkufhubdhqzbdhwljm.supabase.co/storage/v1/object/public/twitter-images/Profile%20Image.jpg?t=2024-08-08T09%3A07%3A03.532Z";
@@ -35,44 +38,43 @@ const defaultCoverImage = "https://czzkufhubdhqzbdhwljm.supabase.co/storage/v1/o
 class UserServices {
     public static async verifyGoogleAuthToken(token: string){
         const googleToken = token;
-        const googleOAuthURL = new URL('https://oauth2.googleapis.com/tokeninfo');
+        const googleOAuthURL = new URL("https://oauth2.googleapis.com/tokeninfo");
         googleOAuthURL.searchParams.set('id_token', googleToken);
-
         const { data } = await axios.get<GoogleTokenResult>(
-            googleOAuthURL.toString(), {
+            googleOAuthURL.toString(),
+            {
                 responseType: 'json'
             }
-        )
-
+        );
         const existingUser = await prismaClient.user.findUnique({
             where: {
                 email: data.email
             }
         });
+
         if(!existingUser){
             const uname = data.given_name.toLowerCase().split(' ').join('') + Math.random().toString(9).slice(-4);
             const generatedPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
             await prismaClient.user.create({
                 data: {
                     email: data.email,
-                    name: data.given_name+ " " + data.family_name,
-                    about: "Hey there! I am using twitter clone",
+                    name: data.given_name + ' ' + data.family_name,
+                    username: uname,
                     password: generatedPassword,
-                    profileImageURL: data.picture || defaultProfileImage,
-                    coverImageURL: defaultCoverImage,
-                    username: uname
-                },
+                    profileImageURL: defaultProfileImage,
+                    coverImageURL: defaultCoverImage
+                }
             });
         }
-
         const userInfo = await prismaClient.user.findUnique({
             where: {
                 email: data.email
             }
         });
-        if(!userInfo) throw new Error('User not found');
-        const userToken = JWTService.generateTokenForUser(userInfo);
 
+        if(!userInfo) throw new Error('User with email not found');
+
+        const userToken = JWTService.generateTokenForUser(userInfo);
         return userToken;
     }
 
@@ -83,9 +85,17 @@ class UserServices {
     }
 
     public static async getUserByUsername(username: string){
-        return prismaClient.user.findUnique({
+        const cachedUser = await redisClient.get(`USER:${username}`);
+        if(cachedUser) return JSON.parse(cachedUser);
+
+        const userData = await prismaClient.user.findUnique({
             where: { username: username }
-        })
+        });
+
+        if(!userData) throw new Error('User does not exist');
+
+        await redisClient.set(`USER:${username}`, JSON.stringify(userData));
+        return userData;
     }
 
     public static followUser (from: string, to: string){
@@ -105,18 +115,38 @@ class UserServices {
         })
     }
 
-    public static updateUser (id: string, userData: UserUpdate){
-        return prismaClient.user.update({
+    public static async updateUser (id: string, userData: UserUpdate){
+        console.log("User data: ", userData);
+        console.log("ID: ", id);
+        const updatedUser = await prismaClient.user.update({
             where: {
-                id
+                id,
             }, 
             data: {
-                name: userData.name,
-                about: userData.about,
-                profileImageURL: userData.profileImageURL,
-                coverImageURL: userData.coverImageURL
-            }
+                name: userData.data.name,
+                about: userData.data.about,
+                profileImageURL: userData.data.profileImageURL,
+                coverImageURL: userData.data.coverImageURL,
+            },
         });
+        if(!updatedUser) throw new Error ('Error while updating data');
+        console.log(updatedUser);
+        await redisClient.set(`USER:${updatedUser.username}`, JSON.stringify(updatedUser));
+        return updatedUser;
+    }
+
+    public static async deleteUser(id: string){
+        const deletedUser = await prismaClient.user.delete({
+            where: {
+                id
+            },
+        });
+        const cachedUser = await redisClient.get(`USER:${deletedUser.username}`);
+        if(!cachedUser) throw new Error('User does not exist.');
+        if(!deletedUser) return false;
+        await redisClient.del(`USER:${deletedUser.username}`);
+        await redisClient.del('ALL_POSTS');
+        return true;
     }
 }
 

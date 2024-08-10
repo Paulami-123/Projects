@@ -20,12 +20,13 @@ const SideBar: React.FC = () => {
       if(!googleToken){
         return toast.error(`Google token not found`);
       }
-      const { verifyGoogleToken } = await graphqlClient.request(verifyUserGoogleTokenQuery, {token: googleToken});
+      console.log("Google Token: ", googleToken);
+      // const { verifyGoogleToken } = await graphqlClient.request(verifyUserGoogleTokenQuery, {token: googleToken});
   
-      toast.success(`Verification Successful`);
-      if(verifyGoogleToken){
-        window.localStorage.setItem('token', verifyGoogleToken);
-      }
+      // toast.success(`Verification Successful`);
+      // if(verifyGoogleToken){
+      //   window.localStorage.setItem('token', verifyGoogleToken);
+      // }
   
       await queryClient.invalidateQueries({ queryKey: ['Current-User'] });
     }, [queryClient]);
@@ -44,11 +45,11 @@ const SideBar: React.FC = () => {
               <GoogleLogin onSuccess={handleLoginWithGoogle} />
             </div>
           }
-          {user?.recommendedUsers && 
+          {user?.recommendedUsers && user.recommendedUsers.length>0 && 
             <div className="px-5 py-10">
               <h1 className="font-bold text-2xl">Who to follow</h1>
               { user.recommendedUsers.map((el) => (
-                <Link href={`/${el?.username}`} className="hover:bg-gray-700 rounded-lg">
+                <Link href={`/${el?.username}`} className="hover:bg-gray-700 rounded-lg py-4">
                     <div className="flex justify-center items-center py-3 gap-2 ">
                     {el?.profileImageURL && 
                       <Image src={el.profileImageURL} alt={el.name} width={20} height={20} className="rounded-lg h-12 w-16" />

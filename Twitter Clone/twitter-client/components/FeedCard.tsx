@@ -48,8 +48,8 @@ const FeedCard: React.FC<FeedCardProps> = (props) => {
             <div className="grid grid-cols-12 gap-2">
                 <div className="col-span-1">
                     {post.author?.profileImageURL && (
-                        <Image src={post.author?.profileImageURL}
-                        alt={post.author.name} height={50} width={50} className="rounded-full" />
+                        <img src={post.author?.profileImageURL}
+                        alt={post.author.name} className="rounded-full w-full h-10" />
                     )}
                 </div>
                 <div className="col-span-11 text-white">

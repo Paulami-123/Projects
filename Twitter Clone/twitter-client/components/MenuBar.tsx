@@ -1,9 +1,11 @@
 "use client"
 
 import { useCurrentUser } from "@/hooks/user";
+import { useQueryClient } from "@tanstack/react-query";
+import { Modal } from "flowbite-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { BsFeather, BsTwitter } from "react-icons/bs";
 import { CgFormatSlash } from "react-icons/cg";
 import { CiUser } from "react-icons/ci";
@@ -61,6 +63,14 @@ const MenuBar: React.FC = () => {
           link: `/`
         }],
       [user?.id]);
+      
+      const [showModal, setShowModal] = useState(false);
+      const queryClient = useQueryClient(); 
+      
+      const handleLogout = async() =>{
+        window.localStorage.removeItem('token');
+        await queryClient.invalidateQueries({ queryKey: ['Current-User'] });
+      }
 
     return (
         <div>
@@ -88,18 +98,28 @@ const MenuBar: React.FC = () => {
             </div>
           </div>
           {user && (
-            <div className="absolute bottom-5 grid grid-cols-9 gap-2 hover:bg-gray-800 lg:px-4 lg:py-2 items-center rounded-full cursor-pointer">
-              {user && user.profileImageURL && (
-                <div className="col-span-9 lg:col-span-2 lg:pr-2">
-                  <Image className="rounded-full outline" src={user.profileImageURL} alt={user.name} height={50} width={50} />
+            <div className="">
+              {showModal && (
+                  <div className="absolute bottom-20 w-72 my-3 outline outline-gray-700 outline-[0.5px] rounded-xl text-start">
+                    <button className="p-3 pl-4 font-bold" onClick={() => {
+                      handleLogout();
+                      setShowModal(false);
+                    }}>Log out @{user.username}</button>
+                  </div>
+                )}
+              <div className="absolute bottom-5 grid grid-cols-9 gap-2 hover:bg-gray-800 lg:px-4 lg:py-2 items-center rounded-full cursor-pointer">
+                {user && user.profileImageURL && (
+                  <div className="col-span-9 lg:col-span-2 lg:pr-2">
+                    <img className="rounded-full w-full h-9 object-fill" src={user.profileImageURL} alt={user.name} />
+                  </div>
+                )}
+                <div className="col-span-0 hidden lg:block lg:col-span-6">
+                  <h3 className="text-s font-bold">{user.name}</h3>
+                  <p className="text-gray-600">@{user.username}</p>
                 </div>
-              )}
-              <div className="col-span-0 hidden lg:block lg:col-span-6">
-                <h3 className="text-s font-bold">{user.name}</h3>
-                <p className="text-gray-600">@{user.username}</p>
-              </div>
-              <div className="col-span-0 hidden lg:block lg:col-span-1">
-                <HiDotsHorizontal />
+                <div className="col-span-0 hidden lg:block lg:col-span-1" onClick={() => setShowModal(!showModal)}>
+                  <HiDotsHorizontal />
+                </div>
               </div>
             </div>
           )}

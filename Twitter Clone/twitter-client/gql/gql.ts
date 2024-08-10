@@ -20,9 +20,10 @@ const documents = {
     "\n    #graphql\n    mutation FollowUser($to: ID!){\n        followUser(to: $to)\n    }\n": types.FollowUserDocument,
     "\n    #graphql\n    mutation UnfollowUser($to: ID!){\n        unfollowUser(to: $to)\n    }\n": types.UnfollowUserDocument,
     "\n  query GetAllPosts {\n    getAllPosts {\n      id\n      content\n      images\n      createdAt\n      author {\n        id\n        username\n        name\n        profileImageURL\n      }\n    }\n  }\n": types.GetAllPostsDocument,
-    "\n    #graphql\n    query VerifyUserGoogleToken($token: String!){\n        verifyGoogleToken(token: $token)\n    }\n": types.VerifyUserGoogleTokenDocument,
+    "\n    #graphql\n    query VerifyUserGoogleToken($token: String!) {\n        verifyGoogleToken(token: $token)\n    }\n": types.VerifyUserGoogleTokenDocument,
     "\n    #graphql\n    query GetCurrentUser {\n        getCurrentUser {\n            id\n            profileImageURL\n            coverImageURL\n            email\n            name\n            about\n            username\n            followers {\n                id\n                name\n                username\n                profileImageURL\n            }\n            following {\n                id\n                name\n                username\n                profileImageURL\n            }\n            recommendedUsers {\n                id\n                name\n                username\n                profileImageURL\n            }\n            posts{\n                id\n                content\n                images\n                author {\n                    id\n                    username\n                    profileImageURL\n                }\n            }\n        }\n    }\n": types.GetCurrentUserDocument,
     "\n    #graphql\n    query GetUserByUsername($username: String!){\n        getUserByUsername(username: $username) {\n            username\n            id\n            name\n            about\n            profileImageURL\n            coverImageURL\n            followers {\n                id\n                name\n                username\n                profileImageURL\n            }\n            following {\n                id\n                name\n                username\n                profileImageURL\n            }\n            createdAt\n            posts {\n                id\n                content\n                images\n                createdAt\n                author {\n                    id\n                    username\n                    name\n                    profileImageURL\n                }\n            }\n        }\n    }\n": types.GetUserByUsernameDocument,
+    "\n    #graphql\n    query DeleteUserAccount{\n        deleteUserAccount\n    }\n": types.DeleteUserAccountDocument,
 };
 
 /**
@@ -70,7 +71,7 @@ export function graphql(source: "\n  query GetAllPosts {\n    getAllPosts {\n   
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    #graphql\n    query VerifyUserGoogleToken($token: String!){\n        verifyGoogleToken(token: $token)\n    }\n"): (typeof documents)["\n    #graphql\n    query VerifyUserGoogleToken($token: String!){\n        verifyGoogleToken(token: $token)\n    }\n"];
+export function graphql(source: "\n    #graphql\n    query VerifyUserGoogleToken($token: String!) {\n        verifyGoogleToken(token: $token)\n    }\n"): (typeof documents)["\n    #graphql\n    query VerifyUserGoogleToken($token: String!) {\n        verifyGoogleToken(token: $token)\n    }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -79,6 +80,10 @@ export function graphql(source: "\n    #graphql\n    query GetCurrentUser {\n   
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n    #graphql\n    query GetUserByUsername($username: String!){\n        getUserByUsername(username: $username) {\n            username\n            id\n            name\n            about\n            profileImageURL\n            coverImageURL\n            followers {\n                id\n                name\n                username\n                profileImageURL\n            }\n            following {\n                id\n                name\n                username\n                profileImageURL\n            }\n            createdAt\n            posts {\n                id\n                content\n                images\n                createdAt\n                author {\n                    id\n                    username\n                    name\n                    profileImageURL\n                }\n            }\n        }\n    }\n"): (typeof documents)["\n    #graphql\n    query GetUserByUsername($username: String!){\n        getUserByUsername(username: $username) {\n            username\n            id\n            name\n            about\n            profileImageURL\n            coverImageURL\n            followers {\n                id\n                name\n                username\n                profileImageURL\n            }\n            following {\n                id\n                name\n                username\n                profileImageURL\n            }\n            createdAt\n            posts {\n                id\n                content\n                images\n                createdAt\n                author {\n                    id\n                    username\n                    name\n                    profileImageURL\n                }\n            }\n        }\n    }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    #graphql\n    query DeleteUserAccount{\n        deleteUserAccount\n    }\n"): (typeof documents)["\n    #graphql\n    query DeleteUserAccount{\n        deleteUserAccount\n    }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

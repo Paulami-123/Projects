@@ -3,7 +3,8 @@ import { prismaClient } from '../../client/db';
 import JWTService from '../../services/jwt';
 import { GraphQLContext } from '../../interfaces';
 import { User } from '@prisma/client';
-import UserServices from '../../services/user';
+import UserServices, { UserUpdate } from '../../services/user';
+import { redisClient } from '../../client/redis';
 
 
 interface GoogleTokenResult {
@@ -37,19 +38,12 @@ interface SignUpDetails {
     password: string
 }
 
-interface UserUpdate {
-    name?: string,
-    about?: string,
-    profileImageURL: string,
-    coverImageURL?: string
-}
-
 const defaultProfileImage = "https://czzkufhubdhqzbdhwljm.supabase.co/storage/v1/object/public/twitter-images/Profile%20Image.jpg?t=2024-08-08T09%3A07%3A03.532Z";
 const defaultCoverImage = "https://czzkufhubdhqzbdhwljm.supabase.co/storage/v1/object/public/twitter-images/Cover%20Image.jfif?t=2024-08-08T09%3A06%3A47.410Z";
 
 const queries = {
 
-    verifyGoogleToken: async(parent: any, { token }: { token: string }) => {
+    verifyGoogleToken : async(parent: any, {token}: {token: string}) => {
         const userToken = await UserServices.verifyGoogleAuthToken(token);
         return userToken;
     },
@@ -63,7 +57,13 @@ const queries = {
         return userData;
     },
 
-    getUserByUsername: async(parent: any, { username }: { username: string }, ctx: GraphQLContext) =>UserServices.getUserByUsername(username)
+    getUserByUsername: async(parent: any, { username }: { username: string }, ctx: GraphQLContext) =>UserServices.getUserByUsername(username),
+
+    deleteUserAccount: async(parent: any, args: any, ctx: GraphQLContext) => {
+        if(!ctx.user) throw new Error('You are not authenticated');
+        const response = await UserServices.deleteUser(ctx.user.id);
+        return response;
+    }
     
 };
 
@@ -111,20 +111,21 @@ const mutations = {
 
     updateUserData: async(parent: any, {userData}: { userData: UserUpdate }, ctx: GraphQLContext) => {
         if(!ctx.user || !ctx.user.id)   throw new Error('You are not authenticated');
-        const updatedUser = await UserServices.updateUser(ctx.user.id, userData)
-        if(!updatedUser) throw new Error ('Error while updating data');
+        const updatedUser = await UserServices.updateUser(ctx.user.id, userData);
         return updatedUser;
     },
 
     followUser: async(parent: any, {to}: { to: string }, ctx: GraphQLContext) => {
         if(!ctx.user || !ctx.user.id) throw new Error ('You are not authenticated');
         await UserServices.followUser(ctx.user.id, to);
+        await redisClient.del(`RECOMMENDED_USER:${ctx.user?.id}`);
         return true;
     },
 
     unfollowUser: async(parent: any, {to}: { to: string }, ctx: GraphQLContext) => {
         if(!ctx.user || !ctx.user.id) throw new Error ('You are not authenticated');
         await UserServices.unfollowUser(ctx.user.id, to);
+        await redisClient.del(`RECOMMENDED_USER:${ctx.user?.id}`);
         return true;
     },
     
@@ -151,6 +152,10 @@ const extraResolvers = {
         }, 
         recommendedUsers: async(parent: User, _: any, ctx: GraphQLContext) => {
             if(!ctx) return [];
+            const cachedValue = await redisClient.get(`RECOMMENDED_USER:${ctx.user?.id}`);
+
+            if(cachedValue) return JSON.parse(cachedValue);
+
             const myFollowings = await prismaClient.follows.findMany({
                 where: {
                     follower: {id: ctx.user?.id}
@@ -167,7 +172,9 @@ const extraResolvers = {
                     }
                 }
             });
+
             const users: User[] = [];
+
             for (const followings of myFollowings){
                 for(const followingByFollowedUser of followings.following.followers){
                     if(followingByFollowedUser.following.id!==ctx.user?.id 
@@ -177,6 +184,9 @@ const extraResolvers = {
                     }
                 }
             }
+
+            await redisClient.set(`RECOMMENDED_USER:${ctx.user?.id}`, JSON.stringify(users)); 
+
             return users;
         }
     }

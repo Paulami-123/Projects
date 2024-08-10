@@ -55,7 +55,8 @@ const UserProfilePage: NextPage = () =>{
 
     const amIFollowing = useMemo(() => {
         if(!userData?.userInfo) return false;
-        return ((currentUser?.following?.findIndex((el) => el?.id===userData.userInfo?.id) ?? -1)>=0);
+        //Edit here
+        return ((currentUser?.following?.findIndex((el: any) => el?.id===userData.userInfo?.id) ?? -1)>=0);
     }, [currentUser?.id, userData?.userInfo]);
 
     const handleFollowUser = useCallback(async() => {
@@ -86,12 +87,15 @@ const UserProfilePage: NextPage = () =>{
                 <div className="flex justify-between items-center">
                     <div className="absolute top-32 left-5">
                         {userData?.userInfo?.profileImageURL && (
-                            <Image src={userData.userInfo?.profileImageURL} alt={userData.userInfo?.username} height={125} width={125} className="rounded-full border-black border-4" />
+                            <img src={userData.userInfo?.profileImageURL} alt={userData.userInfo?.username} className="rounded-full w-36 h-36 border-black border-4" />
                         )}
                     </div>
                     <div className="absolute top-48 pt-2 right-5 text-2xl items-center">
                         {currentUser?.username===userData?.userInfo?.username ? (
-                            <button className="text-sm font-bold py-2 px-4 rounded-full border-gray-300 text-white" onClick={() => setShowEditModal(true)}>Edit Profile</button>
+                            <button className="text-sm font-bold py-2 px-4 rounded-full border-gray-300 text-white" onClick={() => {
+                                setShowEditModal(!showEditModal);
+                                setShowEditModal(!showEditModal);
+                            }}>Edit Profile</button>
                         ) : (
                             <div className="flex gap-4 ">
                                 <HiOutlineDotsHorizontal className="rounded-full border border-gray-500" />
@@ -115,7 +119,7 @@ const UserProfilePage: NextPage = () =>{
                         <div className="text-sm text-gray-400">
                             <h1 className="text-xl font-bold text-gray-200">{userData.userInfo?.name}</h1>
                             <p>@{userData.userInfo?.username}</p>
-                            <p className="pt-5 text-gray-200">Hey there! I am using Twitter Clone</p>
+                            <p className="pt-5 text-gray-200">{userData.userInfo?.about}</p>
                             <div className="pt-2 flex gap-1 items-center">
                                 <FaRegCalendarAlt className="" />
                                 <p>Joined {months[new Date(userData.userInfo?.createdAt).getMonth()-1]} {new Date(userData.userInfo?.createdAt).getFullYear()}</p>

@@ -1,29 +1,21 @@
 import { Post } from "@prisma/client";
 import { prismaClient } from "../../client/db";
 import { GraphQLContext } from "../../interfaces";
-
-interface CreatePostPayload{
-    content: string
-    postImages?: string[]
-}
-
+import PostServices, { CreatePostPayload } from "../../services/post";
 
 const queries = {
-    getAllPosts: () => prismaClient.post.findMany({orderBy: {createdAt: 'desc'}})
+    getAllPosts: async() => PostServices.getAllPosts(),
 };
 
 const mutations = {
     createPost: async(parent: any, { payload }: { payload: CreatePostPayload }, ctx: GraphQLContext) => {
         if(!ctx.user) throw new Error("You are not authenticated");
-        const post = await prismaClient.post.create({
-            data: {
-                content: payload.content,
-                images: payload.postImages,
-                author: {connect: {id: ctx.user.id}},
-            }
+        const post = await PostServices.createPost({
+            ...payload,
+            userId: ctx.user.id
         });
 
-        if(!post) throw new Error ('Error while creating post.')
+        if(!post) throw new Error ('Error while creating post.');
 
         return post;
     }

@@ -3,7 +3,7 @@
 import { graphqlClient } from "@/clients/api";
 import { UserUpdate } from "@/gql/graphql";
 import { updateUserMutation } from "@/graphql/mutation/user";
-import { getCurrentUserQuery } from "@/graphql/query/user";
+import { deleteUserAccountQuery, getCurrentUserQuery } from "@/graphql/query/user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
@@ -27,4 +27,12 @@ export const useUpdateUser = () => {
         },
     });
     return mutation;
+}
+
+export const useDeleteUser = () => {
+    const query = useQuery({
+        queryKey: ['Delete-Current-User'],
+        queryFn: () => graphqlClient.request(deleteUserAccountQuery)
+    });
+    return { ...query, success: query.data }
 }

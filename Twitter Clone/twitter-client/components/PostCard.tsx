@@ -84,14 +84,14 @@ const PostCard: React.FC = () => {
         }
     };
 
-
     return(
         <div className="border border-t border-gray-600 p-4 hover:bg-slate-900 transition-all cursor-pointer">
             <div className="grid grid-cols-12 gap-2 items-start">
                 <div className="col-span-1">
                     {user?.profileImageURL && (
-                        <Image src={user?.profileImageURL}
-                        alt="user-image" height={50} width={50} className="rounded-full" />
+                        <div className="pt-1.5">
+                            <img src={user?.profileImageURL} alt="user-image" className="object-fill w-full h-10 rounded-full" />
+                        </div>
                     )}
                 </div>
                 <div className="col-span-11 text-white mt-2">

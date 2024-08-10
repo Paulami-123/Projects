@@ -51,6 +51,7 @@ export default function Home() {
     if(!googleToken){
       return toast.error(`Google token not found`);
     }
+    console.log("Google Token: ", googleToken);
     const { verifyGoogleToken } = await graphqlClient.request(verifyUserGoogleTokenQuery, {token: googleToken});
     console.log(verifyGoogleToken);
 
@@ -60,19 +61,17 @@ export default function Home() {
     }
     
     await queryClient.invalidateQueries({ queryKey: ['Current-User'] });
-    router.push('/home');
     return;
   }, [queryClient]);
 
   const handleLogin = useCallback(async(userData: SignInType) => {
     const { userSignInToken } = await graphqlClient.request(signInTokenMutation, { userData }); 
-    console.log(userSignInToken);
+    console.log("Token: ",userSignInToken);
 
     if(userSignInToken){
       toast.success(`Verification successful`);
       window.localStorage.setItem('token', userSignInToken);
       await queryClient.invalidateQueries({ queryKey: ['Current-User'] });
-      router.push('/home');
     }
     else{
       toast.error('Error while signing in.');
@@ -88,7 +87,6 @@ export default function Home() {
       toast.success(`Verification successful`);
       window.localStorage.setItem('token', userSignUpToken);
       await queryClient.invalidateQueries({ queryKey: ['Current-User'] });
-      router.push('/home');
     }
     else{
       toast.error('Error while signing up.');
