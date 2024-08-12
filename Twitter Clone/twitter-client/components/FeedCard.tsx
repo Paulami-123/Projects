@@ -18,38 +18,37 @@ const FeedCard: React.FC<FeedCardProps> = (props) => {
     const post = props.post;
     const [postedOn, setPostedOn] = useState('');
     useEffect(() => {
-        const hours = new Date(post.createdAt).getHours() - new Date().getHours();
-        if(hours>=1){
-            if(hours>=1 && hours<24){
-                setPostedOn(`${hours}h ago`)
-            }
-            else if(hours>=24 && hours<48){
-                setPostedOn('Yesterday');
-            }
-            else if(hours>=48 && hours<24*7){
-                setPostedOn(`${hours/24}d ago`);
-            }
-            else{
-                setPostedOn(new Date().toDateString().substring(4));
-            }
+        const minutes = Math.floor((new Date().getTime() - new Date(post.createdAt).getTime())/(60*1000));
+        if(minutes<=0){
+            setPostedOn('Just Now');
+        }
+        else if(minutes>0 && minutes<60){
+            setPostedOn(`${minutes}m ago`);
         }
         else{
-            const minutes = new Date(post.createdAt).getMinutes() - new Date().getMinutes();
-            if(minutes<0){
-                setPostedOn("Just Now");
+            const hrs = Math.floor(minutes/60);
+            if(hrs<24){
+                setPostedOn(`${hrs}h ago`);
+            }
+            else if(hrs>=24 && hrs<48){
+                setPostedOn('1 day ago');
+            }
+            else if(hrs>=48 && hrs<24*7){
+                const days = Math.floor(hrs/24)
+                setPostedOn(`${days} day ago`)
             }
             else{
-                setPostedOn(`${minutes}m ago`);
+                setPostedOn(new Date(post.createdAt).toDateString().substring(4))
             }
         }
     }, [])
     return(
         <div className="border border-t border-gray-600 p-4 hover:bg-slate-900 transition-all cursor-pointer">
             <div className="grid grid-cols-12 gap-2">
-                <div className="col-span-1">
+                <div className="col-span-1 mt-2">
                     {post.author?.profileImageURL && (
-                        <img src={post.author?.profileImageURL}
-                        alt={post.author.name} className="rounded-full w-full h-10" />
+                        <img src={post.author.profileImageURL}
+                        alt={post.author.name} className="rounded-full w-full h-4 lg:h-10 hidden md:block" />
                     )}
                 </div>
                 <div className="col-span-11 text-white">
@@ -59,13 +58,13 @@ const FeedCard: React.FC<FeedCardProps> = (props) => {
                             {post.author.name}
                         </Link>
                         <h5>{"@"+post.author?.username}</h5>
-                        <div>•</div>
-                        <h5>{postedOn}</h5>
+                        <div className="hidden lg:block">•</div>
+                        <h5 className="hidden lg:block">{postedOn}</h5>
                     </div>
                     <p>{post.content}</p>
                     <div>
                         {post?.images && post.images.map((img) => (
-                            <Image src={img || '#'} alt="image" width={125} height={125} className="w-full p-3" />
+                            <Image src={img || '#'} alt="image" width={125} height={125} className="w-full p-3 rounded-lg" />
                         ))}
                     </div>
                     <div className="flex justify-between mt-5 text-xl text-gray-500 items-center">

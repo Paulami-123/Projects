@@ -11,7 +11,10 @@ class PostServices {
 
     public static async createPost(data: CreatePostPayload){
         const rateLimitFlage = await redisClient.get(`RATE_LIMIT:POST:${data.userId}`);
-        if(rateLimitFlage) throw new Error('Please wait for a while.');
+        // if(rateLimitFlage) throw new Error('Please wait for a while.');
+        if(rateLimitFlage){
+            return {success: false, error: 'Please wait for a while.'};
+        }
         const post = await prismaClient.post.create({
             data: {
                 content: data.content,
@@ -19,9 +22,12 @@ class PostServices {
                 author: {connect: {id: data.userId}},
             }
         });
+        if(!post){
+            return {success: false, error: 'Error while creating post.'};
+        }
         await redisClient.setex(`RATE_LIMIT:POST:${post.authorId}`, 10, 1);
         await redisClient.del('ALL_POSTS');
-        return post;
+        return {success: true, error: null};
     }
 
     public static async getAllPosts(){

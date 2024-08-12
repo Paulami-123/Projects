@@ -3,43 +3,8 @@ import { prismaClient } from '../../client/db';
 import JWTService from '../../services/jwt';
 import { GraphQLContext } from '../../interfaces';
 import { User } from '@prisma/client';
-import UserServices, { UserUpdate } from '../../services/user';
+import UserServices, { SignInDetails, SignUpDetails, UserUpdate } from '../../services/user';
 import { redisClient } from '../../client/redis';
-
-
-interface GoogleTokenResult {
-    iss?: string,
-    nbf?: string,
-    aud?: string,
-    sub?: string,
-    email: string,
-    email_verified: string,
-    azp?: string,
-    name?: string,
-    picture?: string,
-    given_name: string,
-    family_name?: string,
-    iat?: string,
-    exp?: string,
-    jti?: string,
-    alg?: string,
-    kid?: string,
-    typ?: string
-}
-
-interface SignInDetails {
-    email: string,
-    password: string
-}
-
-interface SignUpDetails {
-    name: string,
-    email: string,
-    password: string
-}
-
-const defaultProfileImage = "https://czzkufhubdhqzbdhwljm.supabase.co/storage/v1/object/public/twitter-images/Profile%20Image.jpg?t=2024-08-08T09%3A07%3A03.532Z";
-const defaultCoverImage = "https://czzkufhubdhqzbdhwljm.supabase.co/storage/v1/object/public/twitter-images/Cover%20Image.jfif?t=2024-08-08T09%3A06%3A47.410Z";
 
 const queries = {
 
@@ -49,18 +14,23 @@ const queries = {
     },
 
     getCurrentUser: async(parent: any, args: any, ctx: GraphQLContext) => {
-        const id = ctx.user?.id;
-        if(!id){
+        if(!ctx.user?.id){
             return null;
         }
-        const userData = await UserServices.getUserById(id);
+        const userData = await UserServices.getUserById(ctx.user.id);
         return userData;
     },
 
-    getUserByUsername: async(parent: any, { username }: { username: string }, ctx: GraphQLContext) =>UserServices.getUserByUsername(username),
+    getUserByUsername: async(parent: any, { username }: { username: string }, ctx: GraphQLContext) =>{
+        const response = await UserServices.getUserByUsername(username);
+        return response;
+    },
 
-    deleteUserAccount: async(parent: any, args: any, ctx: GraphQLContext) => {
-        if(!ctx.user) throw new Error('You are not authenticated');
+    deleteUserAccount: async(parent: any, args: any, ctx: GraphQLContext,) => {
+        // if(!ctx.user) throw new Error('You are not authenticated');
+        if(!ctx.user){
+            return {success: false, error: 'You are not authenticated'};
+        }
         const response = await UserServices.deleteUser(ctx.user.id);
         return response;
     }
@@ -69,48 +39,15 @@ const queries = {
 
 const mutations = {
 
-    userSignUpToken: async(parent: any, { userData }: { userData: SignUpDetails }) => {
-        const existingUser = await prismaClient.user.findUnique({
-            where: {
-                email: userData.email
-            }
-        });
-
-        if(existingUser) throw new Error ('User already exists. Try logging in instead.');
-
-        const uname = userData.name.toLowerCase().split(' ').join('') + Math.random().toString(9).slice(-4)
-        const newUser = await prismaClient.user.create({
-            data: {
-                name: userData.name,
-                about: "Hey there! I am using twitter clone",
-                username: uname,
-                email: userData.email,
-                password: userData.password,
-                profileImageURL: defaultProfileImage,
-                coverImageURL: defaultCoverImage,
-            }
-        });
-
-        if(!newUser) throw new Error('Error while signing up. Try again.');
-        const userToken = JWTService.generateTokenForUser(newUser);
-        return userToken;
-    },
+    userSignUpToken: async(parent: any, { userData }: { userData: SignUpDetails }) => UserServices.createUserAccount(userData),
     
-    userSignInToken: async(parent: any, {userData}: { userData: SignInDetails }) => {
-        const existingUser = await prismaClient.user.findUnique({
-            where: {
-                email: userData.email
-            }
-        });
-        if(!existingUser) throw new Error ('User does not exist. Try signing up instead.');
-        else if(existingUser.password!==userData.password) throw new Error ('Incorrect Password');
-
-        const userToken = JWTService.generateTokenForUser(existingUser);
-        return userToken;
-    },
+    userSignInToken: async(parent: any, {userData}: { userData: SignInDetails }) => UserServices.findUserAccount(userData),
 
     updateUserData: async(parent: any, {userData}: { userData: UserUpdate }, ctx: GraphQLContext) => {
-        if(!ctx.user || !ctx.user.id)   throw new Error('You are not authenticated');
+        // if(!ctx.user || !ctx.user.id)   throw new Error('You are not authenticated');
+        if(!ctx.user || !ctx.user.id){
+            return {data: null, error: 'You are not authenticated'};
+        }
         const updatedUser = await UserServices.updateUser(ctx.user.id, userData);
         return updatedUser;
     },

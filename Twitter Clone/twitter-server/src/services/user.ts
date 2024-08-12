@@ -2,6 +2,7 @@ import axios from "axios";
 import { prismaClient } from "../client/db";
 import JWTService from "./jwt";
 import { redisClient } from "../client/redis";
+import bcryptjs from "bcryptjs";
 
 export interface GoogleTokenResult {
     iss?: string,
@@ -25,15 +26,26 @@ export interface GoogleTokenResult {
 
 export interface UserUpdate {
     data: {
-        name?: string,
+    name?: string,
     about?: string,
     profileImageURL?: string,
     coverImageURL?: string
     }
 }
 
-const defaultProfileImage = "https://czzkufhubdhqzbdhwljm.supabase.co/storage/v1/object/public/twitter-images/Profile%20Image.jpg?t=2024-08-08T09%3A07%3A03.532Z";
-const defaultCoverImage = "https://czzkufhubdhqzbdhwljm.supabase.co/storage/v1/object/public/twitter-images/Cover%20Image.jfif?t=2024-08-08T09%3A06%3A47.410Z";
+export interface SignInDetails {
+    email: string,
+    password: string
+}
+
+export interface SignUpDetails {
+    name: string,
+    email: string,
+    password: string
+}
+
+const defaultProfileImageURL = "https://media.istockphoto.com/id/1305665241/vector/anonymous-gender-neutral-face-avatar-incognito-head-silhouette-stock-illustration.jpg?s=612x612&w=0&k=20&c=qA6GUTalFyrBCRVUzQgp2B5zODxmOA4NXTBcw9notYY=";
+const defaultCoverImageURL = "https://plus.unsplash.com/premium_photo-1663954130790-e85da8e5539c?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmxhY2t8ZW58MHx8MHx8fDA%3D";
 
 class UserServices {
     public static async verifyGoogleAuthToken(token: string){
@@ -55,14 +67,15 @@ class UserServices {
         if(!existingUser){
             const uname = data.given_name.toLowerCase().split(' ').join('') + Math.random().toString(9).slice(-4);
             const generatedPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+            const hashedPassword = bcryptjs.hashSync(generatedPassword, 10);
             await prismaClient.user.create({
                 data: {
                     email: data.email,
                     name: data.given_name + ' ' + data.family_name,
                     username: uname,
-                    password: generatedPassword,
-                    profileImageURL: defaultProfileImage,
-                    coverImageURL: defaultCoverImage
+                    password: hashedPassword,
+                    profileImageURL: defaultProfileImageURL,
+                    coverImageURL: defaultCoverImageURL
                 }
             });
         }
@@ -72,10 +85,68 @@ class UserServices {
             }
         });
 
-        if(!userInfo) throw new Error('User with email not found');
+        // if(!userInfo) throw new Error('User with email not found');
+        if(!userInfo){
+            return {token: null, error: 'User with email not found'};
+        }
 
         const userToken = JWTService.generateTokenForUser(userInfo);
-        return userToken;
+        return {token: userToken, error: null};
+    }
+
+    public static async findUserAccount(userData: SignInDetails){
+        const existingUser = await prismaClient.user.findUnique({
+            where: {
+                email: userData.email
+            }
+        });
+        // if(!existingUser) throw new Error ('User does not exist. Try signing up instead.');
+        if(!existingUser){
+            return {token: null, error: 'User does not exist. Try signing up instead.'};
+        }
+        const validPassword = bcryptjs.compareSync(userData.password, existingUser.password);
+        // if(!validPassword) throw new Error('Incorrect Password.');
+        if(!validPassword){
+            return {token: null, error: 'Incorrect Password.'};
+        }
+
+        const userToken = JWTService.generateTokenForUser(existingUser);
+        return {token: userToken, error: null};
+    }
+
+    public static async createUserAccount(userData: SignUpDetails){
+        const existingUser = await prismaClient.user.findUnique({
+            where: {
+                email: userData.email
+            }
+        });
+
+        // if(existingUser) throw new Error ('User already exists. Try logging in instead.');
+        if(existingUser){
+            return {token: null, error: 'User already exists. Try logging in instead.'};
+        }
+
+        const uname = userData.name.toLowerCase().split(' ').join('') + Math.random().toString(9).slice(-4);
+        const hashedPassword = bcryptjs.hashSync(userData.password, 10)
+        const newUser = await prismaClient.user.create({
+            data: {
+                name: userData.name,
+                about: "Hey there! I am using twitter clone",
+                username: uname,
+                email: userData.email,
+                password: hashedPassword,
+                profileImageURL: defaultProfileImageURL,
+                coverImageURL: defaultCoverImageURL,
+            }
+        });
+
+        // if(!newUser) throw new Error('Error while signing up. Try again.');
+        if(!newUser){
+            return {token: null, error: 'Error while signing up. Try again.'}
+        }
+        await redisClient.set(`USER:${newUser.username}`, JSON.stringify(userData));
+        const userToken = JWTService.generateTokenForUser(newUser);
+        return {token: userToken, error: null};
     }
 
     public static async getUserById(id: string){
@@ -86,13 +157,19 @@ class UserServices {
 
     public static async getUserByUsername(username: string){
         const cachedUser = await redisClient.get(`USER:${username}`);
-        if(cachedUser) return JSON.parse(cachedUser);
+        // if(cachedUser) return JSON.parse(cachedUser);
+        if(cachedUser){
+            return JSON.parse(cachedUser);
+        }
 
         const userData = await prismaClient.user.findUnique({
             where: { username: username }
         });
 
-        if(!userData) throw new Error('User does not exist');
+        // if(!userData) throw new Error('User does not exist');
+        if(!userData){
+            return null;
+        }
 
         await redisClient.set(`USER:${username}`, JSON.stringify(userData));
         return userData;
@@ -116,8 +193,6 @@ class UserServices {
     }
 
     public static async updateUser (id: string, userData: UserUpdate){
-        console.log("User data: ", userData);
-        console.log("ID: ", id);
         const updatedUser = await prismaClient.user.update({
             where: {
                 id,
@@ -126,13 +201,15 @@ class UserServices {
                 name: userData.data.name,
                 about: userData.data.about,
                 profileImageURL: userData.data.profileImageURL,
-                coverImageURL: userData.data.coverImageURL,
+                coverImageURL: userData.data.coverImageURL ? userData.data.coverImageURL : defaultCoverImageURL,
             },
         });
-        if(!updatedUser) throw new Error ('Error while updating data');
-        console.log(updatedUser);
+        // if(!updatedUser) throw new Error ('Error while updating data');
+        if(!updatedUser){
+            return {data: null, error: 'Error while updating data'}
+        }
         await redisClient.set(`USER:${updatedUser.username}`, JSON.stringify(updatedUser));
-        return updatedUser;
+        return {data: updatedUser, error: null};
     }
 
     public static async deleteUser(id: string){
@@ -141,12 +218,12 @@ class UserServices {
                 id
             },
         });
-        const cachedUser = await redisClient.get(`USER:${deletedUser.username}`);
-        if(!cachedUser) throw new Error('User does not exist.');
-        if(!deletedUser) return false;
+        if(!deletedUser){
+            return {success: false, error: 'Error while deleting account'};
+        }
         await redisClient.del(`USER:${deletedUser.username}`);
         await redisClient.del('ALL_POSTS');
-        return true;
+        return {success: true, error: null};
     }
 }
 

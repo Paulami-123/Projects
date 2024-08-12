@@ -12,7 +12,6 @@ export const useCurrentUser = () => {
         queryKey: ['Current-User'],
         queryFn: () => graphqlClient.request(getCurrentUserQuery)
     });
-
     return{ ...query, user: query.data?.getCurrentUser };
 };
 
@@ -31,8 +30,8 @@ export const useUpdateUser = () => {
 
 export const useDeleteUser = () => {
     const query = useQuery({
-        queryKey: ['Delete-Current-User'],
+        queryKey: ['Delete-User'],
         queryFn: () => graphqlClient.request(deleteUserAccountQuery)
     });
-    return { ...query, success: query.data }
+    return { ...query, response: query.data?.deleteUserAccount }
 }

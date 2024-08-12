@@ -9,14 +9,14 @@ const queries = {
 
 const mutations = {
     createPost: async(parent: any, { payload }: { payload: CreatePostPayload }, ctx: GraphQLContext) => {
-        if(!ctx.user) throw new Error("You are not authenticated");
+        // if(!ctx.user) throw new Error("You are not authenticated");
+        if(!ctx.user){
+            return {success: false, error: "You are not authenticated"};
+        }
         const post = await PostServices.createPost({
             ...payload,
             userId: ctx.user.id
         });
-
-        if(!post) throw new Error ('Error while creating post.');
-
         return post;
     }
 };

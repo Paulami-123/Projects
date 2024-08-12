@@ -37,4 +37,19 @@ export const types = `#graphql
         profileImageURL:    String
         coverImageURL:      String
     }
+
+    type TokenData {
+        token:              String
+        error:              String
+    }
+
+    type UserData{
+        data:               User
+        error:              String
+    }
+        
+    type DeleteUserType {
+        success:            Boolean!
+        error:              String
+    }
 `;

@@ -1,8 +1,8 @@
 export const queries = `#graphql 
 
-    verifyGoogleToken(token: String!): String
+    verifyGoogleToken(token: String!): TokenData
     getCurrentUser: User
     getUserByUsername(username: String!): User
-    deleteUserAccount: Boolean
+    deleteUserAccount: DeleteUserType
 
 `;

@@ -3,14 +3,20 @@ import { graphql } from "@/gql";
 export const signUpTokenMutation = graphql(`
     #graphql
     mutation UserSignUpToken($userData: SignUpDetails!){
-        userSignUpToken(userData: $userData)
+        userSignUpToken(userData: $userData){
+            token
+            error
+        }
     }
 `);
 
 export const signInTokenMutation = graphql(`
     #graphql
     mutation UserSignInToken($userData: SignInDetails!){
-        userSignInToken(userData: $userData)
+        userSignInToken(userData: $userData){
+            token
+            error
+        }
     }
 `);
 
@@ -18,36 +24,39 @@ export const updateUserMutation = graphql(`
     #graphql
     mutation UpdateUserData($userData: UserUpdate!){
         updateUserData(userData: $userData){
-            id
-            profileImageURL
-            coverImageURL
-            email
-            name
-            about
-            username
-            followers {
+            data{
                 id
-                name
-                username
                 profileImageURL
-            }
-            following {
-                id
+                coverImageURL
+                email
                 name
+                about
                 username
-                profileImageURL
-            }
-            posts{
-                id
-                content
-                images
-                author {
+                followers {
                     id
-                    username
                     name
+                    username
                     profileImageURL
                 }
+                following {
+                    id
+                    name
+                    username
+                    profileImageURL
+                }
+                posts{
+                    id
+                    content
+                    images
+                    author {
+                        id
+                        username
+                        name
+                        profileImageURL
+                    }
+                }
             }
+            error
         }
     }
 `);

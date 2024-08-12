@@ -13,7 +13,6 @@ import { TbListDetails } from "react-icons/tb";
 import { useCreatePost } from "@/hooks/post";
 import { supabase } from "@/supabase";
 import toast from "react-hot-toast";
-import { IoCloseSharp } from "react-icons/io5";
 
 const PostCard: React.FC = () => {
     const { user } = useCurrentUser();
@@ -23,7 +22,7 @@ const PostCard: React.FC = () => {
     const [imagesURL, setImagesURL] = useState<string[]>([]);
     const [files, setFiles] = useState<FileList|null>();
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
-    useAutosizeTextArea(textAreaRef.current, val);
+    useAutosizeTextArea(textAreaRef.current, content);
 
     const { mutateAsync } = useCreatePost();
 
@@ -89,13 +88,13 @@ const PostCard: React.FC = () => {
             <div className="grid grid-cols-12 gap-2 items-start">
                 <div className="col-span-1">
                     {user?.profileImageURL && (
-                        <div className="pt-1.5">
-                            <img src={user?.profileImageURL} alt="user-image" className="object-fill w-full h-10 rounded-full" />
+                        <div className="pt-1.5 mt-3">
+                            <img src={user.profileImageURL} alt="user-image" className="object-fill w-full h-10 rounded-full" />
                         </div>
                     )}
                 </div>
                 <div className="col-span-11 text-white mt-2">
-                    <textarea className="outline-none w-full bg-transparent text-xl" placeholder="What is happening?!"
+                    <textarea className="outline-none border-none focus:outline-none focus:ring-0 w-full bg-transparent text-xl" placeholder="What is happening?!"
                      rows={1} ref={textAreaRef} onChange={(e) => {
                         setVal(e.target.value)
                         setContent(e.target.value);

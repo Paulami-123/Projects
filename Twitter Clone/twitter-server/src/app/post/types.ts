@@ -14,4 +14,9 @@ export const types = `#graphql
         createdAt:      Date!
     }
 
+    type CreatePostType {
+        success:        Boolean!
+        error:          String
+    }
+
 `

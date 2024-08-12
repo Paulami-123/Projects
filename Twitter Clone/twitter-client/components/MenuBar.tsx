@@ -12,6 +12,8 @@ import { CiUser } from "react-icons/ci";
 import { GoBell, GoBookmark, GoHome, GoSearch } from "react-icons/go";
 import { HiDotsHorizontal, HiOutlineDotsCircleHorizontal } from "react-icons/hi";
 import { HiOutlineEnvelope, HiOutlineUsers } from "react-icons/hi2";
+import PostCard from "./PostCard";
+import { FaXTwitter } from "react-icons/fa6";
 
 interface TwittersidebarButton {
   title: string,
@@ -64,7 +66,8 @@ const MenuBar: React.FC = () => {
         }],
       [user?.id]);
       
-      const [showModal, setShowModal] = useState(false);
+      const [showLogOutModal, setShowLogOutModal] = useState(false);
+      const [showPostModal, setShowPostModal] = useState(false);
       const queryClient = useQueryClient(); 
       
       const handleLogout = async() =>{
@@ -74,8 +77,8 @@ const MenuBar: React.FC = () => {
 
     return (
         <div>
-            <div className="text-4xl h-fit w-fit rounded-full hover:bg-gray-200 dark:text-white p-4 cursor-pointer">
-            <BsTwitter />
+            <div className="text-4xl h-fit w-fit rounded-full hover:bg-gray-800 dark:text-white p-4 cursor-pointer">
+            <FaXTwitter />
           </div>
           <div className="mt-4 text-xl text-gray-200 pr-4">
             <ul>
@@ -89,27 +92,27 @@ const MenuBar: React.FC = () => {
               ))}
             </ul>
             <div className="mt-5">
-              <button className="hidden md:block bg-[#1d9bf0] px-4 py-3 rounded-full w-4/5 font-semibold text-white text-base hover:bg-[#1e93e3]">
+              <button onClick={() => setShowPostModal(true)} className="hidden lg:block bg-[#1d9bf0] px-4 py-3 rounded-full w-4/5 font-semibold text-white text-base hover:bg-[#1e93e3]">
                 Post
               </button>
-              <button className="block md:hidden bg-[#1d9bf0] ml-2 p-3 rounded-full text-white hover:bg-[#1e93e3]">
+              <button onClick={() => setShowPostModal(true)} className="block lg:hidden bg-[#1d9bf0] ml-2 p-3 rounded-full text-white hover:bg-[#1e93e3]">
                 <BsFeather strokeWidth={0.75} />
               </button>
             </div>
           </div>
           {user && (
-            <div className="">
-              {showModal && (
-                  <div className="absolute bottom-20 w-72 my-3 outline outline-gray-700 outline-[0.5px] rounded-xl text-start">
+            <div>
+              {showLogOutModal && (
+                  <div className="absolute bottom-8 lg:bottom-20 bg-black outline-white w-72 my-3 outline lg:bg-transparent md:outline-gray-700 outline-[0.5px] rounded-xl text-start">
                     <button className="p-3 pl-4 font-bold" onClick={() => {
                       handleLogout();
-                      setShowModal(false);
+                      setShowLogOutModal(false);
                     }}>Log out @{user.username}</button>
                   </div>
                 )}
-              <div className="absolute bottom-5 grid grid-cols-9 gap-2 hover:bg-gray-800 lg:px-4 lg:py-2 items-center rounded-full cursor-pointer">
+              <div className="absolute bottom-5 grid grid-cols-9 gap-2 lg:hover:bg-gray-800 w-full px-4 py-2 items-center rounded-full cursor-pointer">
                 {user && user.profileImageURL && (
-                  <div className="col-span-9 lg:col-span-2 lg:pr-2">
+                  <div className="col-span-9 lg:col-span-2 lg:pr-2 hidden lg:block">
                     <img className="rounded-full w-full h-9 object-fill" src={user.profileImageURL} alt={user.name} />
                   </div>
                 )}
@@ -117,12 +120,18 @@ const MenuBar: React.FC = () => {
                   <h3 className="text-s font-bold">{user.name}</h3>
                   <p className="text-gray-600">@{user.username}</p>
                 </div>
-                <div className="col-span-0 hidden lg:block lg:col-span-1" onClick={() => setShowModal(!showModal)}>
+                <div className="col-span-1" onClick={() => setShowLogOutModal(!showLogOutModal)}>
                   <HiDotsHorizontal />
                 </div>
               </div>
             </div>
           )}
+          <Modal show={showPostModal} onClose={() => setShowPostModal(false)} popup size={'lg'}>
+            <Modal.Header className="bg-black" />
+            <Modal.Body className="bg-black">
+              <PostCard />
+            </Modal.Body>
+          </Modal>
         </div>
     )
 }

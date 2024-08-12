@@ -1,12 +1,9 @@
-import { getUserData } from '@/app/SSR/user';
 import { graphqlClient } from '@/clients/api';
-import { UpdateDataType } from '@/gql/graphql';
 import { deleteUserAccountQuery } from '@/graphql/query/user';
-import { useCurrentUser, useUpdateUser } from '@/hooks/user';
+import { useUpdateUser } from '@/hooks/user';
 import { supabase } from '@/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 import { Modal } from 'flowbite-react';
-import { notFound, usePathname } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import { RxCross1 } from 'react-icons/rx';
@@ -20,40 +17,16 @@ interface EditInformation {
     profileImageURL?: string
 }
 
-export default function EditDataModal( data: {username: string, show: boolean }) {
-    const [showEditModal, setShowEditModal] = useState(data.show);
+export default function EditDataModal( props: {data: EditInformation}) {
+    const [showEditModal, setShowEditModal] = useState(true);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [editData, setEditData] = useState<EditInformation>({});
+    const [editData, setEditData] = useState<EditInformation>(props.data);
     const [coverFile, setCoverFile] = useState<File>();
     const [profileFile, setProfileFile] = useState<File>();
     const [imgURLSuccess, setImgURLSuccess] = useState(0);
     const queryClient = useQueryClient();
     const { mutateAsync } = useUpdateUser();
-
-    useEffect(() => {
-        const fetchData = async() => {
-            try{
-                if(!data.username){
-                  notFound();
-                }
-                const { props, notFound: error } = await getUserData(data.username);
-                if(error){
-                    return;
-                }
-                setEditData({
-                    name: props?.userInfo?.name,
-                    about: props?.userInfo?.about,
-                    coverImageURL: props?.userInfo?.coverImageURL,
-                    profileImageURL: props?.userInfo?.profileImageURL
-
-                });
-            } catch(err){
-                console.log(err);
-            }
-        }
-        fetchData();
-    }, [data.username]);
 
     const handleInputChangeFile = (input: HTMLInputElement, type: 'profile' | 'cover') => {
       return async(event: Event) => {
@@ -119,6 +92,10 @@ export default function EditDataModal( data: {username: string, show: boolean })
         }
         window.localStorage.removeItem('token');
         queryClient.invalidateQueries({ queryKey: ['Current-User'] });
+        setShowDeleteModal(false);
+        setShowEditModal(false);
+        window.history.replaceState(null, '', '/home');
+        window.location.reload();
     }
 
     useEffect(() => {
@@ -149,7 +126,7 @@ export default function EditDataModal( data: {username: string, show: boolean })
             </Modal.Header>
             <Modal.Body className="bg-black text-gray-300 p-5">
                 <div className="relative">
-                <img src={editData?.coverImageURL} alt="cover-image" id="cover"className="object-fill h-48 w-full" />
+                <img src={editData.coverImageURL} alt="cover-image" id="cover"className="object-fill h-48 w-full" />
                 <div className="absolute top-20 w-full text-gray-300 p-2 text-3xl flex justify-center gap-5 opacity-80">
                     <TbCameraPlus type="file" title="Add Photo" className="bg-gray-900 rounded-full p-1 cursor-pointer" onClick={() => {
                         handleSelectImage('cover');
@@ -160,7 +137,7 @@ export default function EditDataModal( data: {username: string, show: boolean })
                 </div>
                 </div>
                 <div className="absolute top-52 left-8">
-                    <img src={editData?.profileImageURL} alt='User' id="profile" className="object-fill rounded-full w-28 h-28" />
+                    <img src={editData.profileImageURL} alt='User' id="profile" className="object-fill rounded-full w-28 h-28" />
                     <button className="absolute top-6 w-full text-gray-300 p-2 text-3xl flex justify-center gap-5 opacity-80">
                         <TbCameraPlus title="Add Photo" className="bg-gray-900 rounded-full p-1" onClick={() => {
                             handleSelectImage('profile');

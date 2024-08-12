@@ -4,35 +4,32 @@ import { NextPage } from "next";
 import { notFound, usePathname } from "next/navigation";
 import { Post, User } from "@/gql/graphql";
 import { GoArrowLeft } from "react-icons/go";
-import Image from "next/image";
 import { useCurrentUser } from "@/hooks/user";
 import { HiOutlineDotsHorizontal } from "react-icons/hi";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import FeedCard from "@/components/FeedCard";
-import { Modal } from "flowbite-react";
-import { TbCameraPlus } from "react-icons/tb";
-import { RxCross1 } from "react-icons/rx";
 import EditDataModal from "@/components/EditDataModal";
 import { graphqlClient } from "@/clients/api";
 import { followUserMutation, unfollowUserMutation } from "@/graphql/mutation/user";
 import { useQueryClient } from "@tanstack/react-query";
-import { getUserData } from "@/app/SSR/user";
+import { getUserData } from "@/SSR/user";
+import toast from "react-hot-toast";
 
 interface ServerProps {
     userInfo?: User
 }
 
 export interface EditProps {
-    id?: string
     name?: string
-    about?: string
+    about?: string|null
     coverImageURL?: string
     profileImageURL?: string
 }
 
 const UserProfilePage: NextPage = () =>{
     const { user: currentUser } = useCurrentUser();
-    const [userData, setUserData] = useState<ServerProps>();
+    const [userData, setUserData] = useState<ServerProps>({});
+    const [editData, setEditData] = useState<EditProps>({})
     const [showEditModal, setShowEditModal] = useState(false);
     const queryClient = useQueryClient();
     const pathname = usePathname();
@@ -44,10 +41,24 @@ const UserProfilePage: NextPage = () =>{
     useEffect(() => {
         const fetchData = async() => {
             try{
-                const { props, notFound: error } = await getUserData(username);
-                setUserData(props);
+                const { props } = await getUserData(username);
+                if(props?.userInfo){
+                    setUserData(props);
+                    setEditData({
+                        name: props?.userInfo?.name,
+                        about: props?.userInfo?.about,
+                        profileImageURL: props?.userInfo?.profileImageURL,
+                        coverImageURL: props?.userInfo?.coverImageURL
+                    });
+                }
+                else{
+                    toast.error("User does not exist.");
+                    window.history.replaceState(null, '', '/home');
+                    window.location.reload();
+                }
             } catch(err){
                 console.log(err);
+                return;
             }
         }
         fetchData();
@@ -55,8 +66,7 @@ const UserProfilePage: NextPage = () =>{
 
     const amIFollowing = useMemo(() => {
         if(!userData?.userInfo) return false;
-        //Edit here
-        return ((currentUser?.following?.findIndex((el: any) => el?.id===userData.userInfo?.id) ?? -1)>=0);
+        return ((currentUser?.following?.findIndex((el) => el?.id===userData.userInfo?.id) ?? -1)>=0);
     }, [currentUser?.id, userData?.userInfo]);
 
     const handleFollowUser = useCallback(async() => {
@@ -71,23 +81,31 @@ const UserProfilePage: NextPage = () =>{
         await queryClient.invalidateQueries({queryKey: ['current-user']});
     }, [userData?.userInfo?.id, queryClient]);
 
+    const handleGoBack = () => {
+        window.history.replaceState(null, '', '/home');
+        window.location.reload();
+    }
+
    return (
     <div>
         <div>
             <nav className="text-xl flex items-center gap-8 p-1 m-2 cursor-pointer">
-                <GoArrowLeft strokeWidth={1} />
+                <GoArrowLeft strokeWidth={1} onClick={handleGoBack} />
                 <div>
                     <h1 className="font-bold text-gray-200">{userData?.userInfo?.name}</h1>
                     <p className="text-sm text-gray-500">{userData?.userInfo?.posts?.length} posts</p>
                 </div>
             </nav>
             <div className="relative">
-                <img src={userData?.userInfo?.coverImageURL}
-                className="w-full object-fill h-48" />
+                {userData?.userInfo?.coverImageURL ? (
+                    <img src={userData?.userInfo?.coverImageURL} className="w-full object-fill h-48" />
+                ) : (
+                    <div className="w-full h-48 bg-gradient-to-r from-slate-900 to-blue-900" />
+                )}
                 <div className="flex justify-between items-center">
-                    <div className="absolute top-32 left-5">
+                    <div className="absolute left-5 top-32">
                         {userData?.userInfo?.profileImageURL && (
-                            <img src={userData.userInfo?.profileImageURL} alt={userData.userInfo?.username} className="rounded-full w-36 h-36 border-black border-4" />
+                            <img src={userData.userInfo.profileImageURL} alt={userData?.userInfo?.username} className="rounded-full w-36 h-36 border-black border-4 text-center" />
                         )}
                     </div>
                     <div className="absolute top-48 pt-2 right-5 text-2xl items-center">
@@ -134,9 +152,6 @@ const UserProfilePage: NextPage = () =>{
                                     <p>Followers</p>
                                 </div>
                             </div>
-                            <div className="pt-3">
-                                <p>Not followed by anyone you're following</p>
-                            </div>
                         </div>
                     )}
                 </div>
@@ -145,7 +160,7 @@ const UserProfilePage: NextPage = () =>{
                 <FeedCard key={post?.id} post={post as Post} />
             )) }
         </div>
-        {showEditModal && <EditDataModal username={username as string} show={showEditModal} />}
+        {showEditModal && <EditDataModal data={editData} />}
     </div>
    )
 }

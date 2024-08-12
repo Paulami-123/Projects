@@ -20,13 +20,16 @@ const SideBar: React.FC = () => {
       if(!googleToken){
         return toast.error(`Google token not found`);
       }
-      console.log("Google Token: ", googleToken);
-      // const { verifyGoogleToken } = await graphqlClient.request(verifyUserGoogleTokenQuery, {token: googleToken});
+      
+      const { verifyGoogleToken } = await graphqlClient.request(verifyUserGoogleTokenQuery, {token: googleToken});
   
-      // toast.success(`Verification Successful`);
-      // if(verifyGoogleToken){
-      //   window.localStorage.setItem('token', verifyGoogleToken);
-      // }
+      if(verifyGoogleToken?.error){
+        return toast.error(verifyGoogleToken.error);
+      }
+      else if(verifyGoogleToken?.token){
+        window.localStorage.setItem('token', verifyGoogleToken.token);
+        toast.success(`Verification Successful`);
+      }
   
       await queryClient.invalidateQueries({ queryKey: ['Current-User'] });
     }, [queryClient]);
@@ -49,18 +52,18 @@ const SideBar: React.FC = () => {
             <div className="px-5 py-10">
               <h1 className="font-bold text-2xl">Who to follow</h1>
               { user.recommendedUsers.map((el) => (
-                <Link href={`/${el?.username}`} className="hover:bg-gray-700 rounded-lg py-4">
+                <div className="rounded-lg py-4">
                     <div className="flex justify-center items-center py-3 gap-2 ">
                     {el?.profileImageURL && 
                       <Image src={el.profileImageURL} alt={el.name} width={20} height={20} className="rounded-lg h-12 w-16" />
                     }
-                    <div className="rounded-lg w-52">
-                      <h1 className="font-bold text-lg">{el?.name}</h1>
+                    <div className="rounded-lg w-52 pr-12 pl-2">
+                      <Link href={`/${el?.username}`} className="font-bold text-lg hover:underline">{el?.name}</Link>
                       <p className="text-gray-400">@{el?.username}</p>
                     </div>
                     <button onClick={() => handleFollowUser(el?.id)} className="bg-white text-black text-sm font-bold px-4 py-1 my-3 rounded-full">Follow</button>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           }
