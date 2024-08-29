@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import CallToAction from '../components/CallToAction'
 import PostCard from '../components/PostCard';
 import DashSidebar from '../components/DashSideBar';
 
@@ -27,9 +26,6 @@ export const Home = () => {
               web development, software engineering, and programming languages.
             </p>
             <Link to={'/search'} className='text-xs sm:text-sm text-teal-500 font-bold hover:underline'>View all posts</Link>
-          </div>
-          <div className="p-3 bg-amber-100 dark:bg-slate-700">
-            <CallToAction />
           </div>
           <div className="max-w-6xl mx-auto p-3 flex flex-col gap-8 py-7">
             {posts && posts.length>0 && (

@@ -6,9 +6,6 @@ import { IoHeartOutline } from "react-icons/io5";
 import { GoBookmark, GoUpload } from "react-icons/go";
 import { Post } from "@/gql/graphql";
 import Link from "next/link";
-import { GetServerSideProps } from "next";
-import { graphqlClient } from "@/clients/api";
-import { getAllPostsQuery } from "@/graphql/query/post";
 
 interface FeedCardProps {
     post: Post
@@ -91,12 +88,3 @@ const FeedCard: React.FC<FeedCardProps> = (props) => {
 }
 
 export default FeedCard;
-
-export const getServerSideProps: GetServerSideProps = async(context) => {
-    const allPosts = await graphqlClient.request(getAllPostsQuery);
-    return {
-        props: {
-            posts: allPosts.getAllPosts
-        }
-    }
-}

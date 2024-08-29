@@ -41,10 +41,10 @@ export default function DashComments() {
                 setShowModal(false);
             }
             else{
-                console.log(data.message);
+                console.log("Message: ",data.message);
             }
         } catch (error) {
-            console.log(error.message);
+            console.log("Error: ",error.message);
         }
     }
 

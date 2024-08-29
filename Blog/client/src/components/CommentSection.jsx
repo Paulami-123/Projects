@@ -94,11 +94,11 @@ export default function CommentSection({postId}) {
                 navigate('/signin');
                 return;
             }
+            console.log("Comment ID: ", commentId);
             const res = await fetch(`/api/comment/delete/${commentId}`, {
                 method: 'DELETE'
             });
             if(res.ok){
-                const data = await res.json();
                 setComments(comments.filter((comment) => comment._id!==commentId));
             }
         } catch (error) {
